@@ -35,24 +35,19 @@ Pour rappel des grands principes :
 
 ## Dépendances
 
-(en cours)
+Cette base de donnnées est dépendante de la Base Adresse Locale.
+
+`[x_apps].[x_apps_geo_vmr_adresse]` : table géographique partagé des adresses
 
 ## Classes d'objets partagé et primitive graphique
 
-`[].[]` : table géographique partagé des adresses
-   
+`[m_spanc].[xapps_geo_vmr_spanc_anc]` : vue matérialisée géographique partagé avec la Base Adresse Locale permettant l'affichage et le fonctionnel au clic dans l'application. Cette vue remonte pour chaque adresse le nombre d'installation active, de contrôles et la conformité du dernier contrôle.
+
 |Nom attribut | Définition | Type | Valeurs par défaut |
 |:---|:---|:---|:---|
 
-
 Particularité(s) à noter :
-* Une clé primaire existe sur le champ `` l'attribution automatique de la référence unique s'effectue via les vues de gestion. 
-
-
-* 0 triggers :
-
-
----
+* Cette vue matérialisée est rafraichie automatiquement à chaque insertion, mise à jour ou suppression d'une installation, d'un contrôle ou d'une association d'adresses. 
 
 ## Classes d'objets du SPANC
 
@@ -60,11 +55,23 @@ L'ensemble des classes d'objets de gestion sont stockés dans le schéma `m_span
 
 ### Classes d'objets attributaire :
 
-`[].[]` : table alphanumérique contenant 
+`[m_spanc].[xapps_geo_vmr_spanc_anc]` : table alphanumérique contenant
    
 |Nom attribut | Définition | Type | Valeurs par défaut |
 |:---|:---|:---|:---|
-
+|gid|Identifiant unique de l'objet point adresse|bigint| |
+|id_adresse|Identifiant unique interne de l'adresse|bigint| |
+|commune|Libellé de la commune|varchar(80)|issue de la BAL|
+|libvoie_c|Libellé de la voie|varchar(100)|issu de la BAL|
+|libvoie_a|Libellé de la commune (norme AFNOR)|varchar(100)|issu de la BAL|
+|numero|Numéro de voirie|varchar(10)|issu de la BAL|
+|repet|indice de répétition dans la voie|varchar(10)|issu de la BAL |
+|adresse|reconstruction de l'adresse complète|varchar(10)|issue de la BAL |
+|iepci|acronyme de l'EPCI|text|arc, cclo, ccpe, cc2v (issue de la table `r_administratif.an_geo`) |
+|nb_inst|nombre d'installation active à l'adresse (associée ou non)|numeric||
+|nb_contr|nombre de contrôles réalisés à l'adresse avec un niveau de conformité attribué|numeric||
+|confor|dernier niveau de conformité attribué (si 1 installation = conformité du dernier contrôle, si n installations conformité la moins favorable du dernier contrôle de chaque installation)|varchar||
+|geom|géométrie du point d'adresse|geom(point,2154)|issu de la BAL|
 
 Particularité(s) à noter :
 * Une clé primaire existe sur le champ `` l'attribution automatique de la référence unique s'effectue via une séquence. 
