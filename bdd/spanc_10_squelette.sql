@@ -561,13 +561,13 @@ WITH (
 TABLESPACE pg_default;
 
 COMMENT ON TABLE m_spanc.lt_spanc_confor
-    IS 'Liste de valeurs sur les conclusions du contrôle';
+    IS 'Liste de valeurs des conformités du contrôle';
 
 COMMENT ON COLUMN m_spanc.lt_spanc_confor.code
-    IS 'Code des types sur les conclusions du contrôle';
+    IS 'Code des conformités du contrôle';
 
 COMMENT ON COLUMN m_spanc.lt_spanc_confor.valeur
-    IS 'Valeur des types sur les conclusions du contrôle';
+    IS 'Valeur des conformités du conclusion du contrôle';
 
 -- Index: lt_spanc_confor_idx
 -- DROP INDEX m_spanc.lt_spanc_confor_idx;
