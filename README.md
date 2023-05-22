@@ -12,7 +12,7 @@ Ensemble des éléments constituant la mise en oeuvre de la base de données pou
   * [Création des vues applicatives](bdd/spanc_21_vues_xapps.sql)
   * [Création des privilèges](bdd/spanc_99_grant.sql)  
 - [Documentation d'administration de la base de données](bdd/doc_admin_bd_spanc.md)
-- Documentation des utilisateurs de l'application (authentification nécessaire)
+- [Documentation des utilisateurs de l'application (authentification nécessaire)](https://geo.compiegnois.fr/portail/index.php/2019/04/30/le-spanc/#spanc_interface121)
 
 
 
