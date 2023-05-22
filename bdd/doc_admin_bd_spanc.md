@@ -430,10 +430,157 @@ Valeurs possibles :
 
 |Code|Valeur|
 |:---|:---|
-
+|00|Non renseigné (non attribuée)|
+|10|Conforme|
+|20|Non conforme|
+|30|Absence d'installation|
+|ZZ|Non concerné (refus du contrôle)|
 
 ---
 
+`[m_spanc].[lt_spanc_contcl]` : Liste de valeurs sur les conclusions du contrôle
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types sur les conclusions du contrôle|character varying(2)| |
+|valeur|Valeur des types sur les conclusions du contrôle|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Absence d'installation|
+|20|Installation ne présentant pas de défaut apparent|
+|31|Installation présentant un défaut sanitaire|
+|32|Installation présentant un défaut environnementale|
+|40|Installation incomplète, sous-dimentionnée, avec dysfonctionnement|
+|ZZ|Non concerné (refus du contrôle)|
+
+---
+
+`[m_spanc].[lt_spanc_contrdoc]` : Liste de valeurs des types de documents liés à un contrôle
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code du document lié aux contrôles|character varying(2)| |
+|valeur|Valeur du document lié aux contrôles|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Projet de travaux|
+|20|Rapport d'examen|
+|30|Rapport de visite|
+|40|Mise en demeure|
+|50|Application de pénalités|
+|60|Facture|
+
+---
+
+`[m_spanc].[lt_spanc_docinstal]` : Liste de valeurs des types de documents liés à un installation
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code du document lié une installation|character varying(2)| |
+|valeur|Valeur du document lié une installation|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Convention d'entretien|
+|99|Autre|
+
+---
+
+`[m_spanc].[lt_spanc_eh]` : Liste de valeurs des équivalents/habitants
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code de l'équivalent habitat|character varying(2)| |
+|valeur|Valeur de l'équivalent habitat|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|<= 20 EH|
+|20|> 20 EH|
+
+---
+
+`[m_spanc].[lt_spanc_entr]` : Liste de valeurs des documents liés à l'entretien
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code du document de l'entretien|character varying(2)| |
+|valeur|Valeur du document de l'entretien|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Vidange|
+|20|Carnet d'entretien|
+|99|Autre|
+
+---
+
+`[m_spanc].[lt_spanc_equinstall]` : Liste de valeurs des types d'équipements liés à une installation
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types d'équipements liés à une installation|character varying(3)| |
+|valeur|Valeur des types d'équipements liés à une installation|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Aucun|
+|21|Fosse septique avec bac à graisse|
+|22|Fosse septique sans bac à graisse|
+|23|Fosse toutes eaux|
+|31|Tranchée d'épandange|
+|32|Filtre à sable drainé|
+|33|Filtre à sable non drainé|
+|34|Micro-station|
+|35|Filière compacte agréée|
+|36|Tertre|
+|37|Filtre à cheminement lent|
+|43|Puisard|
+|44|Puits d'infiltration|
+|45|Cours d'eau|
+|46|Réseau pluvial|
+|47|Ecoulement à la parcelle|
+|ZZ|Non concerné|
+
+---
 
 ### Classes d'objets attributaire gérant les associations (ou relation d'appartenance des objets entre eux) :
 
