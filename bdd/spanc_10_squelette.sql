@@ -272,7 +272,7 @@ COMMENT ON TABLE m_spanc.lt_spanc_equinstall
 COMMENT ON COLUMN m_spanc.lt_spanc_equinstall.code
     IS 'Code des types d''équipements liés à une installation';
 
-   COMMENT ON COLUMN m_spanc.lt_spanc_typinstall.valeur
+COMMENT ON COLUMN m_spanc.lt_spanc_equinstall.valeur
     IS 'Valeur des types d''équipements liés à une installation';   
    
 -- Index: lt_spanc_typimmeuble_idx
