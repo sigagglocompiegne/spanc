@@ -416,12 +416,12 @@ Particularité(s) à noter :
 
 #### Liste de valeurs
 
-`[m_spanc].[lt_spanc_confor]` : Liste de valeurs sur les conclusions du contrôle
+`[m_spanc].[lt_spanc_confor]` : Liste de valeurs des conformités du contrôle
 
 |Nom attribut | Définition |
 |:---|:---|
-|code|Code des types sur les conclusions du contrôle|character varying(2)| |
-|valeur|Valeur des types sur les conclusions du contrôle|text| |
+|code|Code des conformités du contrôle|character varying(2)| |
+|valeur|Valeur des conformités du conclusion du contrôle|text| |
 
 Particularité(s) à noter :
 * Une clé primaire existe sur le champ code 
