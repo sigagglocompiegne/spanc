@@ -31,4 +31,4 @@ Sans objet
 
 ## Jeu de données consolidé
 
-Sans objet
+Aucun jeu de données consolidé n'est disponible.
