@@ -355,11 +355,6 @@ left join req_max m on m.id_adresse = f.id_adresse where f.tri_confor = m.tri_co
 COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc 
 	IS 'Vue matérialisée rafraichie applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l''état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO';
 
-ALTER TABLE m_spanc.xapps_geo_vmr_spanc_anc OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_vmr_spanc_anc TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_vmr_spanc_anc TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_vmr_spanc_anc TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_vmr_spanc_anc TO sig_edit;
 
 
 -- ########################################################### xapps_geo_v_spanc_tri_contr ##################################################################
@@ -388,11 +383,6 @@ WHERE
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tri_contr 
 	IS 'Vue applicative pour palier au bug de GEO2.2 pour l''affichage des contrôles triés par date dans la fiche de l''installation';
 
-ALTER TABLE m_spanc.xapps_geo_v_spanc_tri_contr OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tri_contr TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tri_contr TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tri_contr TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tri_contr TO sig_edit;  
 
 
 -- ########################################################### xapps_geo_an_spanc_install_export ##################################################################
@@ -481,12 +471,6 @@ FROM
 COMMENT ON VIEW m_spanc.xapps_geo_an_spanc_install_export 
 	IS 'Vue applicative générant les exports des installations';
 
-ALTER TABLE m_spanc.xapps_geo_an_spanc_install_export OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_an_spanc_install_export TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_an_spanc_install_export TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_an_spanc_install_export TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_an_spanc_install_export TO sig_edit;  
-
 
 
 -- ########################################################### xapps_geo_an_spanc_contr_export ##################################################################
@@ -548,11 +532,6 @@ order by split_part(c.idcontr,'_',2)::integer
 COMMENT ON VIEW m_spanc.xapps_geo_an_spanc_contr_export 
 	IS 'Vue applicative générant les exports des contrôles';
 
-ALTER TABLE m_spanc.xapps_geo_an_spanc_contr_export OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_an_spanc_contr_export TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_an_spanc_contr_export TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_an_spanc_contr_export TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_an_spanc_contr_export TO sig_edit;  
 
 
 -- ########################################################### xapps_geo_v_spanc_rpqs_tab1 ##################################################################
@@ -681,11 +660,6 @@ left join req_nb_nonconf inc on inc.epci = e.epci;
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_rpqs_tab1 
 	IS 'Vue applicative ressortant les indicateurs RPQS pour le tableau de bord n°1 du SPANC';
 
-ALTER TABLE m_spanc.xapps_geo_v_spanc_rpqs_tab1 OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_rpqs_tab1 TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_rpqs_tab1 TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_rpqs_tab1 TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_rpqs_tab1 TO sig_edit;  
 
 -- ########################################################### xapps_geo_v_spanc_tab2 ##################################################################
 
@@ -749,12 +723,6 @@ WITH req_d AS (
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab2 
 	IS 'Vue applicative ressortant les indicateurs des types de contrôles par année sur l''EPCI (à transformer par commune)';
 
-ALTER TABLE m_spanc.xapps_geo_v_spanc_tab2 OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab2 TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab2 TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab2 TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab2 TO sig_edit;  
-
 -- ########################################################### xapps_geo_v_spanc_tab3 ##################################################################
 
 -- m_spanc.xapps_geo_v_spanc_tab3
@@ -780,11 +748,6 @@ group by c.epci,to_char(c.date_vis,'yyyy');
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab3 
 	IS 'Vue applicative ressortant le nombre total de contrôles par année et par epci';
 
-ALTER TABLE m_spanc.xapps_geo_v_spanc_tab3 OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab3 TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab3 TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab3 TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab3 TO sig_edit;
 
 -- ########################################################### xapps_geo_v_spanc_tab4 ##################################################################
 
@@ -870,11 +833,6 @@ WITH req_d AS (
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab4 
 	IS 'Vue applicative ressortant le montant de la redevance et des pénalités';
 
-ALTER TABLE m_spanc.xapps_geo_v_spanc_tab4 OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab4 TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab4 TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab4 TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab4 TO sig_edit;
 
 
 -- ########################################################### xapps_geo_v_spanc_tab5 ##################################################################
@@ -936,11 +894,6 @@ left join req_delais_moyen d on d.epci = e.epci;
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab5 
 	IS 'Vue applicative ressortant les chiffres clés du SPANC';
 
-ALTER TABLE m_spanc.xapps_geo_v_spanc_tab5 OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab5 TO create_sig;
-GRANT ALL ON TABLE m_spanc.xapps_geo_v_spanc_tab5 TO sig_create;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab5 TO sig_read;
-GRANT SELECT ON TABLE m_spanc.xapps_geo_v_spanc_tab5 TO sig_edit;
 
 -- ########################################################### an_v_log_controle ##################################################################
 
@@ -981,13 +934,7 @@ dataold like '%sherbin%'
 
 COMMENT ON VIEW m_spanc.an_v_log_controle IS 'Vue interne récupérant les mouvements réalisées sur les données du SPANC par les utilisateurs avec un profil EDIT pour la phase de test';
 
--- Permissions
 
-ALTER TABLE m_spanc.an_v_log_controle OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.an_v_log_controle TO create_sig;
-GRANT ALL ON TABLE m_spanc.an_v_log_controle TO sig_create;
-GRANT SELECT ON TABLE m_spanc.an_v_log_controle TO sig_read;
-GRANT SELECT ON TABLE m_spanc.an_v_log_controle TO sig_edit;
 
 
 -- ########################################################### an_v_spanc_periodicite ##################################################################
@@ -1127,13 +1074,6 @@ select
 
 COMMENT ON VIEW m_spanc.an_v_spanc_periodicite IS 'Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active';
 
--- Permissions
-
-ALTER TABLE m_spanc.an_v_spanc_periodicite OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.an_v_spanc_periodicite TO create_sig;
-GRANT ALL ON TABLE m_spanc.an_v_spanc_periodicite TO sig_create;
-GRANT SELECT ON TABLE m_spanc.an_v_spanc_periodicite TO sig_read;
-GRANT SELECT ON TABLE m_spanc.an_v_spanc_periodicite TO sig_edit;
                       
                    
 -- ########################################################### old_xapps_geo_v_spanc_anc ##################################################################
@@ -1267,11 +1207,3 @@ AS WITH req_ad AS (
 
 COMMENT ON VIEW m_spanc.old_xapps_geo_v_spanc_anc IS 'Ancienne vue applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l''état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO. Remplacée par une vue matérialisée gérant également l''affichage des installations partagées entre plusieurs adresses';
 
--- Permissions
-
-ALTER TABLE m_spanc.old_xapps_geo_v_spanc_anc OWNER TO postgres;
-GRANT ALL ON TABLE m_spanc.old_xapps_geo_v_spanc_anc TO create_sig;
-GRANT ALL ON TABLE m_spanc.old_xapps_geo_v_spanc_anc TO sig_stage;
-GRANT ALL ON TABLE m_spanc.old_xapps_geo_v_spanc_anc TO sig_create;
-GRANT SELECT ON TABLE m_spanc.old_xapps_geo_v_spanc_anc TO sig_read;
-GRANT SELECT ON TABLE m_spanc.old_xapps_geo_v_spanc_anc TO sig_edit;  
