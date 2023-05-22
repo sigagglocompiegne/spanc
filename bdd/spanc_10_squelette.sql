@@ -1926,7 +1926,7 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_refresh_instal() IS 'Fonction rafraichissant la vue xapps_geo_vmr_spanc_anc pour localisater les adresses avec ou sans installation.';
 
 
--- ################################################################# Fonction - ft_m_refresh_instal  ############################################
+-- ################################################################# Fonction - ft_m_controle_adresse_associe (plus utilisée)  ############################################
 
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_adresse_associe()
  RETURNS trigger
@@ -2444,15 +2444,10 @@ CREATE INDEX lk_spanc_installad_id_idx
     (id ASC NULLS LAST)
     TABLESPACE pg_default;  
    
-create trigger t_t2_refresh_carto after
+create trigger t_t1_refresh_carto after
 insert or delete or update
     on
     m_spanc.lk_spanc_installad  for each row execute procedure m_spanc.ft_m_refresh_instal(); 
-   
-create trigger t_t1_verif_association before
-insert
-    on
-    m_spanc.lk_spanc_installad for each row execute procedure m_spanc.ft_m_controle_adresse_associe();
    
    
    -- ################################################# Classe des objets des contacts des installations : lk_spanc_contact ##################################
