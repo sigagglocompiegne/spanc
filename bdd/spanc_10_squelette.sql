@@ -3011,7 +3011,7 @@ update
     on
     m_spanc.an_spanc_cad for each row execute procedure ft_r_timestamp_maj();
    
-create trigger t_t3_an_spanc_cad_date_maj before
+create trigger t_t3_an_spanc_cad_controle before
 INSERT OR update
     on
     m_spanc.an_spanc_cad for each row execute procedure m_spanc.ft_m_verif_ref_cad();   
