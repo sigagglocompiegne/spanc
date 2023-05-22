@@ -9,7 +9,6 @@ Ensemble des éléments constituant la mise en oeuvre de la base de données pou
 - Script d'initialisation de la base de données
   * [Suivi des modifications](bdd/spanc_00_trace.sql)
   * [Création de la structure des données](bdd/spanc_10_squelette.sql)
-  * [Création des vues de gestion](bdd/spanc_20_vues_gestion.sql)
   * [Création des vues applicatives](bdd/spanc_21_vues_xapps.sql)
   * [Création des privilèges](bdd/spanc_99_grant.sql)  
 - [Documentation d'administration de la base de données](bdd/doc_admin_bd_spanc.md)
