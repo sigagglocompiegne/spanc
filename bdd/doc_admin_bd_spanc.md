@@ -45,20 +45,6 @@ Cette base de donnnées est dépendante de la Base Adresse Locale.
 
 |Nom attribut | Définition | Type | Valeurs par défaut |
 |:---|:---|:---|:---|
-
-Particularité(s) à noter :
-* Cette vue matérialisée est rafraichie automatiquement à chaque insertion, mise à jour ou suppression d'une installation, d'un contrôle ou d'une association d'adresses. 
-
-## Classes d'objets du SPANC
-
-L'ensemble des classes d'objets de gestion sont stockés dans le schéma `m_spanc`.
-
-### Classes d'objets attributaire :
-
-`[m_spanc].[xapps_geo_vmr_spanc_anc]` : table alphanumérique contenant
-   
-|Nom attribut | Définition | Type | Valeurs par défaut |
-|:---|:---|:---|:---|
 |gid|Identifiant unique de l'objet point adresse|bigint| |
 |id_adresse|Identifiant unique interne de l'adresse|bigint| |
 |commune|Libellé de la commune|varchar(80)|issue de la BAL|
@@ -72,6 +58,22 @@ L'ensemble des classes d'objets de gestion sont stockés dans le schéma `m_span
 |nb_contr|nombre de contrôles réalisés à l'adresse avec un niveau de conformité attribué|numeric||
 |confor|dernier niveau de conformité attribué (si 1 installation = conformité du dernier contrôle, si n installations conformité la moins favorable du dernier contrôle de chaque installation)|varchar||
 |geom|géométrie du point d'adresse|geom(point,2154)|issu de la BAL|
+
+Particularité(s) à noter :
+* L'attribut `gid` sert de référence unique 
+* Cette vue matérialisée est rafraichie automatiquement à chaque insertion, mise à jour ou suppression d'une installation, d'un contrôle ou d'une association d'adresses. 
+
+## Classes d'objets du SPANC
+
+L'ensemble des classes d'objets de gestion sont stockés dans le schéma `m_spanc`.
+
+### Classes d'objets attributaire :
+
+`[m_spanc].[xapps_geo_vmr_spanc_anc]` : table alphanumérique contenant
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+
 
 Particularité(s) à noter :
 * Une clé primaire existe sur le champ `` l'attribution automatique de la référence unique s'effectue via une séquence. 
