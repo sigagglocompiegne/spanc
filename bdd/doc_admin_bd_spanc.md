@@ -19,7 +19,8 @@ Pour rappel des grands principes :
 
 ## Modèle relationel simplifié
 
-(en cours)
+
+![spanc_mcd](mcd_v1.png)
 
 ## Dépendances
 
