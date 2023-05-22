@@ -103,7 +103,7 @@ Particularité(s) à noter :
 * Une clé étrangère existe sur la table de valeur `an_spanc_installation_inst_etat_fkey` (lien vers la liste de valeurs de l'état de l'installation `lt_spanc_etatinstall`)
 * Une clé étrangère existe sur la table de valeur `an_spanc_installation_typim_fkey` (lien vers la liste de valeurs du type d'immeuble `lt_spanc_typim`)
 
-* 1 triggers :
+* 6 triggers :
   * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
   * `t_t1_an_spanc_installation_date_sai` : trigger permettant d'insérer la date de saisie
   * `t_t2_an_spanc_installation_date_maj` : trigger permettant d'insérer la date de mise à jour
@@ -160,7 +160,7 @@ Particularité(s) à noter :
 * Une clé étrangère existe sur la table de valeur `an_spanc_controle_contrnreal_fkey` (lien vers la liste de valeurs sur les types de refus d'un contrôle `lt_spanc_refus`)
 * Une clé étrangère existe sur la table de valeur `an_spanc_controle_modgest_fkey` (lien vers la liste de valeurs sur le mode de gestion du contrôle `lt_spanc_modgest`)
 
-* 1 triggers :
+* 9 triggers :
   * `t_t0_an_spanc_controle_idcontr` : trigger permettant de formater l'identifiant du contrôle (EPCI + num)
   * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
   * `t_t1_an_spanc_controle_date_sai` : trigger permettant d'insérer la date de saisie
@@ -169,7 +169,7 @@ Particularité(s) à noter :
   * `t_t5_an_spanc_controle_equi_update` : trigger permettant de gérer la mise à jour des équipements au niveau de l'installation à la mise à jour
   * `t_t6_an_spanc_controle_equi_insert` : trigger permettant de gérer la mise à jour des équipements au niveau de l'installation à l'insertion
   * `t_t8_refresh_carto` : trigger permettant de rafraichir la vue matérialisée `m_spanc.xapps_geo_vmr_spanc_anc`
-  *  `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
+  * `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
  
 ---
 
@@ -187,11 +187,231 @@ Particularité(s) à noter :
 Particularité(s) à noter :
 * Une clé primaire existe sur le champ `idinstal` l'attribution automatique de la référence unique s'effectue via une séquence. 
 
-* 1 triggers :
+* 4 triggers :
   * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
   * `t_t1_an_spanc_cad_date_sai` : trigger permettant d'insérer la date de saisie
   * `t_t2_an_spanc_cad_date_maj` : trigger permettant d'insérer la date de mise à jour
-  * `t_t3_an_spanc_cad_date_maj` : trigger permettant de gérer les contrôles de saisie 
+  * `t_t3_an_spanc_cad_controle` : trigger permettant de gérer les contrôles de saisie 
+  
+---
+
+`[m_spanc].[an_spanc_conf]` : table alphanumérique contenant les paramètres des périodes à appliquer entre chaque contrôle
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|idconf|Identifiant interne non signifiant pour chaque enregistrement|bigint|nextval('an_spanc_conf_seq'::regclass)|
+|contr_perio_c|Nombre d'années entre 2 contrôles périodiques des installations conformes|smallint| |
+|contr_perio_nc|Nombre d'années entre 2 contrôles périodiques des installations non conformes|smallint| |
+|contr_trav|Nombre d'années de délais pour la réalisation des travaux|smallint| |
+|contr_abs|Nombre de mois pour la vérification si absence d'installation|smallint| |
+|rel_perio|Délais de relance lié à un contrôle en mois si la date choisie pour l'automatisme n'est pas remplie|smallint| |
+|date_sai|Date de saisie des informations d'installation|timestamp without time zone| |
+|date_maj|Date de mise à jour des informations d'installation|timestamp without time zone| |
+|op_sai|Opérateur ayant saisi l'information d'installation|character varying(20)| |
+|op_maj|Opérateur ayant modifier les informations d'installation|character varying(20)| |
+|epci|Acronyme de l'EPCI d'assise de l'installation|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `idconf` l'attribution automatique de la référence unique s'effectue via une séquence. 
+
+* 5 triggers :
+  * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
+  * `t_t1_an_spanc_conf_date_sai` : trigger permettant d'insérer la date de saisie
+  * `t_t2_an_spanc_conf_date_maj` : trigger permettant d'insérer la date de mise à jour
+  * `t_t3_an_spanc_conrole_conf` : trigger permettant de gérer les contrôles de saisie 
+  * `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
+ 
+---
+
+`[m_spanc].[an_spanc_contact]` : table alphanumérique contenant les contacts
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|idcontact|Identifiant interne non signifiant|bigint|nextval('an_spanc_contact_id_seq'::regclass)|
+|ref_typ|Typologie de la référence pour le contrôle|character varying(2)|'00'::character varying|
+|ref_patro|Patronyme du référent|character varying(2)|'00'::character varying|
+|ref_autre|Libellé de l'organisme référente pour le contrôle (si type de référent est autre)|text| |
+|ref_nom|Nom de la personne physique référente pour le contrôle|text| |
+|ref_prenom|Prénom de la personne physique référente pour le contrôle|text| |
+|ref_tel|Téléphone du référent pour le contrôle|character varying(10)| |
+|ref_telp|Téléphone portable du référent pour le contrôle|character varying(10)| |
+|ref_email|Email du référent pour le contrôle|text| |
+|adcompl|Complément d'adresse|text| |
+|adautre|Adresse différente du lieu|boolean|false|
+|adautre_lib|Libellé de l'Adresse différente du lieu|text| |
+|factu_cont|Contact pour la facturation|boolean|false|
+|factu_adc|Adresse de facturation différente de l'adresse de l'installation|boolean|false|
+|factu_ad|Adresse de facturation|text| |
+|date_sai|Date de saisie des informations d'installation|timestamp without time zone| |
+|date_maj|Date de mise à jour des informations d'installation|timestamp without time zone| |
+|op_sai|Opérateur ayant saisi l'information d'installation|character varying(20)| |
+|op_maj|Opérateur ayant modifier les informations d'installation|character varying(20)| |
+|epci|Acronyme de l'EPCI d'assise de l'installation|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `idcontact` l'attribution automatique de la référence unique s'effectue via une séquence. 
+* Une clé étrangère existe sur la table de valeur `an_spanc_contact_reftyp_fkey` (lien vers la liste de valeurs sur le type de contact `lt_spanc_typcontact`)
+* Une clé étrangère existe sur la table de valeur `an_spanc_installation_refpatro_fkey` (lien vers la liste de valeurs sur le type de référence du patronyme `lt_spanc_patro`)
+
+* 5 triggers :
+  * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
+  * `t_t1_an_spanc_contact_date_sai` : trigger permettant d'insérer la date de saisie
+  * `t_t2_an_spanc_contact_date_maj` : trigger permettant d'insérer la date de mise à jour
+  * `t_t3_an_spanc_contact_controle_saisie` : trigger permettant de gérer les contrôles de saisie 
+  * `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
+ 
+---
+
+`[m_spanc].[an_spanc_controle_media]` : table alphanumérique contenant le dictionnaire des documents joints à un contrôle
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|gid|Compteur (identifiant interne)|bigint|nextval('an_spanc_controle_media_seq'::regclass)|
+|id|Identifiant interne non signifiant de l'objet saisi|text| |
+|media|Champ Média de GEO|text| |
+|miniature|Champ miniature de GEO|bytea| |
+|n_fichier|Nom du fichier|text| |
+|t_fichier|Type de média dans GEO|text| |
+|date_sai|Date de la saisie du document|timestamp without time zone| |
+|op_sai|Opérateur de saisie (par défaut login de connexion à GEO)|character varying(20)| |
+|date_doc|Date du document|timestamp without time zone| |
+|t_doc|Type de documents|character varying(2)| |
+|observ|Commentaires divers|character varying(5000)| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `gid` l'attribution automatique de la référence unique s'effectue via une séquence. 
+* Une clé étrangère existe sur la table de valeur `an_spanc_controle_media_t_doc_fkey` (lien vers la liste de valeurs sur le type de documents `lt_spanc_contrdoc`)
+
+* 1 triggers :
+  * `an_spanc_controle_media_t_doc_fkey` : trigger permettant vérifiant le contrôle de saisie
+
+---
+
+`[m_spanc].[an_spanc_dsp]` : table alphanumérique contenant la liste des DSP
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|gid|Compteur (identifiant interne)|bigint|nextval('an_spanc_controle_media_seq'::regclass)|
+|id|Identifiant interne non signifiant de l'objet saisi|text| |
+|media|Champ Média de GEO|text| |
+|miniature|Champ miniature de GEO|bytea| |
+|n_fichier|Nom du fichier|text| |
+|t_fichier|Type de média dans GEO|text| |
+|date_sai|Date de la saisie du document|timestamp without time zone| |
+|op_sai|Opérateur de saisie (par défaut login de connexion à GEO)|character varying(20)| |
+|date_doc|Date du document|timestamp without time zone| |
+|t_doc|Type de documents|character varying(2)| |
+|observ|Commentaires divers|character varying(5000)| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `iddsp` l'attribution automatique de la référence unique s'effectue via une séquence. 
+
+* 5 triggers :
+  * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
+  * `t_t1_an_spanc_dsp_date_sai` : trigger permettant d'insérer la date de saisie
+  * `t_t2_an_spanc_dsp_date_maj` : trigger permettant d'insérer la date de mise à jour
+  * `t_t3_an_spanc_controle_dsp` : trigger permettant de gérer les contrôles de saisie 
+  * `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
+ 
+---
+
+`[m_spanc].[an_spanc_entretien_media]` : table alphanumérique contenant le dictionnaire des documents liés aux entretiens d'une installation
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|gid|Compteur (identifiant interne)|bigint|nextval('an_spanc_installation_media_seq'::regclass)|
+|id|Identifiant interne non signifiant de l'objet saisi|bigint| |
+|media|Champ Média de GEO|text| |
+|miniature|Champ miniature de GEO|bytea| |
+|n_fichier|Nom du fichier|text| |
+|t_fichier|Type de média dans GEO|text| |
+|date_sai|Date de la saisie du document|timestamp without time zone| |
+|op_sai|Opérateur de saisie (par défaut login de connexion à GEO)|character varying(20)| |
+|t_doc|Type de document|character varying(2)| |
+|l_doc|Libellé du document|character varying(254)| |
+|observ|Commentaires divers|character varying(5000)| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `gid` l'attribution automatique de la référence unique s'effectue via une séquence. 
+* Une clé étrangère existe sur la table de valeur `an_spanc_entretien_media_t_doc_fkey` (lien vers la liste de valeurs sur le type de documents `lt_spanc_entr`)
+
+* 1 triggers :
+  * `t_t1_an_spanc_controle_instal_media` : trigger permettant vérifiant le contrôle de saisie
+ 
+---
+
+`[m_spanc].[an_spanc_installation_media]` : table alphanumérique contenant le dictionnaire des documents liés à une installation (hors entretien)
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|gid|Compteur (identifiant interne)|bigint|nextval('an_spanc_installation_media_seq'::regclass)|
+|id|Identifiant interne non signifiant de l'objet saisi|bigint| |
+|media|Champ Média de GEO|text| |
+|miniature|Champ miniature de GEO|bytea| |
+|n_fichier|Nom du fichier|text| |
+|t_fichier|Type de média dans GEO|text| |
+|date_sai|Date de la saisie du document|timestamp without time zone| |
+|op_sai|Opérateur de saisie (par défaut login de connexion à GEO)|character varying(20)| |
+|t_doc|Type de document|character varying(2)| |
+|l_doc|Libellé du document|character varying(254)| |
+|observ|Commentaires divers|character varying(5000)| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `gid` l'attribution automatique de la référence unique s'effectue via une séquence. 
+* Une clé étrangère existe sur la table de valeur `an_spanc_installation_media_t_doc_fkey` (lien vers la liste de valeurs sur le type de documents `lt_spanc_docinstal`)
+
+* 1 triggers :
+  * `t_t1_an_spanc_controle_instal_media` : trigger permettant vérifiant le contrôle de saisie
+ 
+---
+
+`[m_spanc].[an_spanc_log]` : table alphanumérique contenant l'ensemble des logs de chaque classe d'objets
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|idlog|Identifiant unique|integer| |
+|tablename|Nom de la classe concernée par une opération|character varying(80)| |
+|type_ope|Type d'opération|text| |
+|dataold|Anciennes données|text| |
+|datanew|Nouvelles données|text| |
+|date_maj|Date d'exécution de l'opération|timestamp without time zone|now()|
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `idlog` l'attribution automatique de la référence unique s'effectue via une séquence. 
+
+---
+
+`[m_spanc].[an_spanc_prestataire]` : table alphanumérique contenant la liste des prestataires
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|idpresta|Identifiant interne non signifiant pour chaque enregistrement|integer|nextval('an_spanc_prestataire_seq'::regclass)|
+|lib_presta|Libellé du prestataire|text| |
+|exist|Prestataire en activité|boolean|true|
+|adresse|Adresse du prestataire|text| |
+|tel|Téléphone du prestataire|character varying(10)| |
+|telp|Téléphone portable du prestataire|character varying(10)| |
+|email|Email du prestataire|text| |
+|siret|Numéro SIRET du prestataire|character varying(14)| |
+|nom_assur|Libellé de l'assureur du prestataire|text| |
+|num_assur|N° de police d'assurance du prestataire|text| |
+|date_assur|Date de fin de validité du prestataire|timestamp without time zone| |
+|date_sai|Date de saisie des informations d'installation|timestamp without time zone| |
+|date_maj|Date de mise à jour des informations d'installation|timestamp without time zone| |
+|op_sai|Opérateur ayant saisi l'information d'installation|character varying(20)| |
+|op_maj|Opérateur ayant modifier les informations d'installation|character varying(20)| |
+|epci|Acronyme de l'EPCI d'assise de l'installation|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `idpresta` l'attribution automatique de la référence unique s'effectue via une séquence. 
+
+* 5 triggers :
+  * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
+  * `t_t1_an_spanc_dsp_date_sai` : trigger permettant d'insérer la date de saisie
+  * `t_t2_an_spanc_dsp_date_maj` : trigger permettant d'insérer la date de mise à jour
+  * `t_t4_an_spanc_controle_presta` : trigger permettant de gérer les contrôles de saisie 
+  * `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
+ 
 ---
 
 #### Liste de valeurs
@@ -216,22 +436,38 @@ Valeurs possibles :
 
 ### Classes d'objets attributaire gérant les associations (ou relation d'appartenance des objets entre eux) :
 
-`[m_spanc].[]` : table alphanumérique de relation entre 
+`[m_spanc].[lk_spanc_contact]` : table alphanumérique de relation entre les installations et les contacts
    
 |Nom attribut | Définition | Type | Valeurs par défaut |
 |:---|:---|:---|:---|
-
+|id|Identifiant interne non signifiant|bigint|nextval('lk_spanc_contact_seq'::regclass)|
+|idinstal|Identifiant de l'installation|bigint| |
+|idcontact|Identifiant interne du contact|bigint| |
 
 
 Particularité(s) à noter :
-* Une clé primaire existe sur le champ `` l'attribution automatique de la référence unique s'effectue via une séquence. 
+* Une clé primaire existe sur le champ `id` l'attribution automatique de la référence unique s'effectue via une séquence. 
 
-* 4 triggers :
-  * `` : trigger permettant de 
-
-  
+* 1 triggers :
+  * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
+ 
 ---
 
+`[m_spanc].[lk_spanc_installad]` : table alphanumérique de relation entre les installations et les contacts
+   
+|Nom attribut | Définition | Type | Valeurs par défaut |
+|:---|:---|:---|:---|
+|id|Identifiant interne non signifiant|bigint|nextval('lk_spanc_installad_seq'::regclass)|
+|idinstal|Identifiant de l'installation|bigint| |
+|idadresse|Identifiant interne Grand Compiégnois de l'adresse|bigint| |
+|adcompl|Complément d'adresse|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ `id` l'attribution automatique de la référence unique s'effectue via une séquence. 
+
+* 1 triggers :
+  * `t_t1_refresh_carto` : trigger permettant de rafraichir la vue matérialisée `m_spanc.xapps_geo_vmr_spanc_anc`
+---
 
 ### classes d'objets applicatives métiers :
 
