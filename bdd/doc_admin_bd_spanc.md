@@ -582,6 +582,218 @@ Valeurs possibles :
 
 ---
 
+`[m_spanc].[lt_spanc_etatinstall]` : Liste de valeurs des état de l'installation
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code de l'état de l'installation|character varying(2)| |
+|valeur|Valeur de l'état de l'installation|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Activée|
+|20|Désactivée|
+
+---
+
+`[m_spanc].[lt_spanc_info]` : Liste de valeurs du dernier moyen d'informations ou de communication utilisé
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code du dernier moyen d'informations ou de communication utilisé|character varying(2)| |
+|valeur|Valeur du dernier moyen d'informations ou de communication utilisé|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|11|Courrier simple|
+|12|Courrier recommandé|
+|20|Téléphone|
+|30|Email|
+
+---
+
+`[m_spanc].[lt_spanc_modgest]` : Liste de valeurs du mode de gestion du contrôle
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code du mode de gestion du contrôle|character varying(2)| |
+|valeur|Valeur du mode de gestion du contrôle|text| |
+|epci|Acronyme de l'EPCI concernée|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|epci|
+|:---|:---|:---|
+|11|Régie|arc|
+|12|Régie|cclo|
+|13|Régie|ccpe|
+|14|Régie|cc2v|
+|21|Prestataire|arc|
+|22|Prestataire|cclo|
+|23|Prestataire|ccpe|
+|24|Prestataire|cc2v|
+|31|DSP|arc|
+|32|DSP|cclo|
+|33|DSP|ccpe|
+|34|DSP|cc2v|
+
+---
+
+`[m_spanc].[lt_spanc_natcontr]` : Liste de valeurs de la nature des contrôles
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types de la nature des contrôles|character varying(2)| |
+|valeur|Valeur des types de la nature des contrôles|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|11|Demande de travaux (neuf)|
+|12|Demande de travaux (réhabilitation)|
+|13|Visite d'éxécution des travaux (neuf)|
+|14|Visite d'éxécution des travaux (réhabilitation)|
+|20|Diagnostic initial|
+|30|Contrôle périodique|
+|40|Contrôle exceptionnel|
+|50|Contrôle lié à une vente|
+|60|Contre-visite|
+
+---
+
+`[m_spanc].[lt_spanc_patro]` : Liste de valeurs des types des patronymes des contacts des installations
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types des patronymes des contacts des installations|character varying(2)| |
+|valeur|Valeur des types des patronymes des contacts des installations|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|11|Monsieur|
+|12|Madame|
+|20|Madame & Monsieur|
+|30|Mesdames & Messieurs|
+|40|SCI|
+|99|Autre|
+
+---
+
+`[m_spanc].[lt_spanc_refus]` : Liste de valeurs des refus du contrôle par l'usager
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types des refus du contrôle par l'usager|character varying(2)| |
+|valeur|Valeur des types des refus du contrôle par l'usager|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Refus de l'usager|
+|20|Absent|
+|30|Report abusif des RDV|
+|ZZ|Non concerné (contrôle réalisé|
+
+---
+
+`[m_spanc].[lt_spanc_typcontact]` : Liste de valeurs des types de contacts des installations
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types de contacts des installations|character varying(2)| |
+|valeur|Valeur des types de contacts des installations|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Propriétaire|
+|20|Occupant|
+|99|Autre|
+
+---
+
+
+`[m_spanc].[lt_spanc_typimmeuble]` : Liste de valeurs des types d'immeubles disposant d'une installation ANC
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code du type d'immeuble|character varying(2)| |
+|valeur|Valeur du type d'immeuble|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Maison individuelle|
+|20|Collectif|
+|31|Local commercial|
+|32|Autres locaux (hors habitation et hors CCPE|
+|40|Habitation temporaire (mobil-home, caravanes, …)|
+|50|Groupement d'habitations|
+
+---
+
+`[m_spanc].[lt_spanc_typinstall]` : Liste de valeurs des types d'installations ANC
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code du type d'installation|character varying(3)| |
+|valeur|Libellé du type d'installation|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|00|Non renseigné|
+|10|Pré-traitement|
+|20|Traitement|
+|30|Rejet|
+
+---
+
 ### Classes d'objets attributaire gérant les associations (ou relation d'appartenance des objets entre eux) :
 
 `[m_spanc].[lk_spanc_contact]` : table alphanumérique de relation entre les installations et les contacts
