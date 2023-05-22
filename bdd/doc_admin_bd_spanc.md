@@ -416,11 +416,12 @@ Particularité(s) à noter :
 
 #### Liste de valeurs
 
-`[m_spanc].[]` : Liste des valeurs permettant de décrire 
+`[m_spanc].[lt_spanc_confor]` : Liste de valeurs sur les conclusions du contrôle
 
-|Nom attribut | Définition | Type  | Valeurs par défaut |
-|:---|:---|:---|:---|    
-
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types sur les conclusions du contrôle|character varying(2)| |
+|valeur|Valeur des types sur les conclusions du contrôle|text| |
 
 Particularité(s) à noter :
 * Une clé primaire existe sur le champ code 
@@ -469,7 +470,7 @@ Particularité(s) à noter :
   * `t_t1_refresh_carto` : trigger permettant de rafraichir la vue matérialisée `m_spanc.xapps_geo_vmr_spanc_anc`
 ---
 
-### classes d'objets applicatives métiers :
+### classes d'objets applicatives métiers (vue) :
 
   *  an_v_spanc_periodicite: : Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active
   * xapps_geo_an_spanc_contr_export : Vue applicative générant les exports des contrôles
@@ -480,10 +481,8 @@ Particularité(s) à noter :
   * xapps_geo_v_spanc_tab4 : Vue applicative ressortant le montant de la redevance et des pénalités
   * xapps_geo_v_spanc_tab5 : Vue applicative ressortant les chiffres clés du SPANC
   * xapps_geo_v_spanc_tri_contr : Vue applicative pour palier au bug de GEO2.2 pour l'affichage des contrôles triés par date dans la fiche de l'installation
-
+  * xapps_geo_vmr_spanc_anc : Vue matérialisée applicative générant la récupération des adresses et les informations liées aux installations pour l'affichage cartographique et le fonctionnel au clic dans l'application
  
-### classes d'objets applicatives métiers :
-
 ### classes d'objets applicatives grands publics sont classés dans le schéma x_apps_public :
 
 Sans objet
