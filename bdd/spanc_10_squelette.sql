@@ -862,12 +862,6 @@ $function$
 COMMENT ON FUNCTION public.ft_r_autorite_competente_user_login() 
 IS 'Fonction trigger affecter l''autorité compétente en fonction de l''utilisateur de saisie';
 
--- Permissions
-
-ALTER FUNCTION public.ft_r_autorite_competente_user_login() OWNER TO create_sig;
-GRANT ALL ON FUNCTION public.ft_r_autorite_competente_user_login() TO public;
-GRANT ALL ON FUNCTION public.ft_r_autorite_competente_user_login() TO create_sig;
-
 
 -- ################################################################# Fonction - ft_m_idcontr  ############################################
 
@@ -899,11 +893,6 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_idcontr() 
 IS 'Fonction trigger générant la clé unique du contrôle composé de l''EPCI et d''un n° d''ordre';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_idcontr() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_idcontr() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_idcontr() TO create_sig;
 
     
 
@@ -937,11 +926,7 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_verif_ref_cad() 
 IS 'Fonction trigger vérifiant la saisie des références cadastrales';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_verif_ref_cad() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_verif_ref_cad() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_verif_ref_cad() TO create_sig;   
+ 
 
 -- ################################################################# Fonction - ft_m_controle_saisie_instal  ############################################
 
@@ -1011,23 +996,6 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_controle_saisie_instal() 
 IS 'Fonction trigger contrôlant la saisie et la cohérence des données de l''installation';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_saisie_instal() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_saisie_instal() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_saisie_instal() TO create_sig;
-
-/*
-drop trigger if exists t_t3_an_spanc_installation_controle_saisie on m_spanc.an_spanc_installation ;
-create trigger t_t3_an_spanc_installation_controle_saisie before
-insert
-    or
-update
-    or 
-delete
-    on
-    m_spanc.an_spanc_installation for each row execute procedure m_spanc.ft_m_controle_saisie_instal()
-*/
 
 -- ################################################################# Fonction - ft_m_controle_saisie_contact  ############################################
 
@@ -1121,12 +1089,6 @@ $function$
 ;
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_saisie_contact() IS 'Fonction de contrôle de saisie d''un contact';
-
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_saisie_contact() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_saisie_contact() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_saisie_contact() TO create_sig;
 
 
 
@@ -1602,18 +1564,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_conform() IS 'Fonction générant automatiquement la conformité selon la conclusion du contrôle et la vérification de la saisie du contrôle';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_conform() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conform() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conform() TO create_sig;
-
-/*
-drop trigger t_t4_an_spanc_controle_conform ON m_spanc.an_spanc_controle;
-create trigger t_t4_an_spanc_controle_conform before
-INSERT OR update OR DELETE on
-    m_spanc.an_spanc_controle for each row execute procedure m_spanc.ft_m_controle_conform();   
-*/
 
 -- ################################################################# Fonction - ft_m_controle_conform_after  ############################################
 
@@ -1638,18 +1588,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_conform_after() IS 'Fonction générant la non insertion d''contrôle si l''installation est désactivée (supprimer le contrôle inséré et renvoi un message';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_conform_after() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conform_after() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conform_after() TO create_sig;
-
-/*
-drop trigger t_t7_an_spanc_controle_conform_after ON m_spanc.an_spanc_controle;
-create trigger t_t7_an_spanc_controle_conform_after after
-INSERT on
-    m_spanc.an_spanc_controle for each row execute procedure m_spanc.ft_m_controle_conform_after();   
-*/
 
 -- ################################################################# Fonction - ft_m_controle_dsp  ############################################   
    
@@ -1699,19 +1637,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_dsp() IS 'Fonction générant les contrôles de saisies des DSP';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_dsp() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_dsp() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_dsp() TO create_sig;
-/*
-drop trigger if exists t_t4_an_spanc_controle_dsp on m_spanc.an_spanc_dsp;
-create trigger t_t4_an_spanc_controle_dsp before
-INSERT OR update OR DELETE on
-    m_spanc.an_spanc_dsp for each row execute procedure m_spanc.ft_m_controle_dsp();   
-
-   */
-
 -- ################################################################# Fonction - ft_m_controle_presta  ############################################
 
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_presta()
@@ -1738,18 +1663,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_presta() IS 'Fonction générant les contrôles de saisies des prestataires';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_presta() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_presta() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_presta() TO create_sig;
-
-/*
-drop trigger if exists t_t4_an_spanc_controle_presta on m_spanc.an_spanc_prestataire;
-create trigger t_t4_an_spanc_controle_presta before
-INSERT OR update OR DELETE on
-    m_spanc.an_spanc_prestataire for each row execute procedure m_spanc.ft_m_controle_presta();   
-*/
    
 -- ################################################################# Fonction - ft_m_update_install_equi  ############################################
 
@@ -1798,20 +1711,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_update_install_equi() IS 'Fonction générant la mise à jour des équipements au niveau de l''installation';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_update_install_equi() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_update_install_equi() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_update_install_equi() TO create_sig;
-/*
-drop trigger if exists t_t5_an_spanc_controle_equi on m_spanc.an_spanc_controle ;
-create trigger t_t5_an_spanc_controle_equi_update before
-update of date_trap on
-    m_spanc.an_spanc_controle for each row execute procedure m_spanc.ft_m_update_install_equi();
-create trigger t_t6_an_spanc_controle_equi_insert after
-insert on
-    m_spanc.an_spanc_controle  for each row execute procedure m_spanc.ft_m_update_install_equi();
-*/
 
 -- ################################################################# Fonction - ft_m_controle_conf  ############################################
 
@@ -1841,18 +1740,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_conf() IS 'Fonction sécurisant la non suppression de la configuration des périodicités.';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_conf() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conf() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conf() TO create_sig;
-
-/*
-create trigger t_t3_an_spanc_controle_conf before
-insert or delete or update
-    on
-    m_spanc.an_spanc_conf for each row execute procedure m_spanc.ft_m_controle_conf();
-*/
 
 -- ################################################################# Fonction - ft_m_controle_instal_media  ############################################
 
@@ -1883,24 +1770,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_instal_media() IS 'Fonction générant les contrôles de saisies des médias pour les installations';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_instal_media() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_instal_media() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_instal_media() TO create_sig;
-
-/*
-drop trigger if exists t_t1_an_spanc_controle_instal_media on m_spanc.an_spanc_installation_media;
-create trigger t_t1_an_spanc_controle_instal_media before
-INSERT OR update OR DELETE on
-    m_spanc.an_spanc_installation_media for each row execute procedure m_spanc.ft_m_controle_instal_media();   
-*/
-/*
-drop trigger if exists t_t1_an_spanc_controle_instal_media on m_spanc.an_spanc_entretien_media;
-create trigger t_t1_an_spanc_controle_instal_media before
-INSERT OR update OR DELETE on
-    m_spanc.an_spanc_entretien_media for each row execute procedure m_spanc.ft_m_controle_instal_media();   
-*/
 
 -- ################################################################# Fonction - ft_m_controle_media  ############################################
 
@@ -1947,19 +1816,6 @@ $function$
 ;
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_media() IS 'Fonction générant les contrôles de saisies des médias pour les contrôles';
-
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_media() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_media() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_media() TO create_sig;
-
-/*
-drop trigger if exists t_t1_an_spanc_controle_media on m_spanc.an_spanc_controle_media;
-create trigger t_t1_an_spanc_controle_media before
-INSERT OR update OR DELETE on
-    m_spanc.an_spanc_controle_media for each row execute procedure m_spanc.ft_m_controle_media();   
-*/
 
 
 -- ################################################################# Fonction - ft_m_spanc_log  ############################################
@@ -2048,48 +1904,7 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_spanc_log() IS 'Fonction gérant l''insertion d''une opération effectuée sur les données du spanc dans la table des logs';
 
--- Permissions
 
-ALTER FUNCTION m_spanc.ft_m_spanc_log() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_spanc_log() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_spanc_log() TO create_sig;
-
-/*
-create trigger t_t100_log after
-insert or delete or update
-    on
-    m_spanc.an_spanc_contact for each row execute procedure m_spanc.ft_m_spanc_log();
-    
-create trigger t_t100_log after
-insert or delete or update
-    on
-    m_spanc.an_spanc_controle for each row execute procedure m_spanc.ft_m_spanc_log();
-    
-create trigger t_t100_log after
-insert or delete or update
-    on
-    m_spanc.an_spanc_installation for each row execute procedure m_spanc.ft_m_spanc_log();
-    
-create trigger t_t100_log after
-insert or delete or update
-    on
-    m_spanc.an_spanc_dsp for each row execute procedure m_spanc.ft_m_spanc_log(); 
-    
-create trigger t_t100_log after
-insert or delete or update
-    on
-    m_spanc.an_spanc_prestataire for each row execute procedure m_spanc.ft_m_spanc_log();        
-    
-create trigger t_t100_log after
-insert or delete or update
-    on
-    m_spanc.lk_spanc_contact for each row execute procedure m_spanc.ft_m_spanc_log(); 
-
-create trigger t_t100_log after
-insert or delete or update
-    on
-    m_spanc.an_spanc_conf for each row execute procedure m_spanc.ft_m_spanc_log();                                                                                                                  
-*/
 
 -- ################################################################# Fonction - ft_m_refresh_instal  ############################################
 
@@ -2110,28 +1925,6 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_refresh_instal() IS 'Fonction rafraichissant la vue xapps_geo_vmr_spanc_anc pour localisater les adresses avec ou sans installation.';
 
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_refresh_instal() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_refresh_instal() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_refresh_instal() TO create_sig;
-
-/*
-create trigger t_t8_refresh_carto after
-insert or delete or update
-    on
-    m_spanc.an_spanc_controle for each row execute procedure m_spanc.ft_m_refresh_instal();
-   
-create trigger t_t8_refresh_carto after
-insert or delete or update
-    on
-    m_spanc.an_spanc_installation for each row execute procedure m_spanc.ft_m_refresh_instal();
-
-create trigger t_t2_refresh_carto after
-insert or delete or update
-    on
-    m_spanc.lk_spanc_installad  for each row execute procedure m_spanc.ft_m_refresh_instal();       
-*/
 
 -- ################################################################# Fonction - ft_m_refresh_instal  ############################################
 
@@ -2164,12 +1957,6 @@ END;
 $function$
 ;
 COMMENT ON FUNCTION m_spanc.ft_m_controle_adresse_associe() IS 'Fonction vérifiant que l''adresse associée pour une installation est dans un rayon de 100 mètres de l''installation.';
-
--- Permissions
-
-ALTER FUNCTION m_spanc.ft_m_controle_adresse_associe() OWNER TO create_sig;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_adresse_associe() TO public;
-GRANT ALL ON FUNCTION m_spanc.ft_m_controle_adresse_associe() TO create_sig;
 
 -- ####################################################################################################################################################
 -- ###                                                                                                                                              ###
@@ -3261,10 +3048,3 @@ COMMENT ON COLUMN m_spanc.an_spanc_log.dataold IS 'Anciennes données';
 COMMENT ON COLUMN m_spanc.an_spanc_log.datanew IS 'Nouvelles données';
 COMMENT ON COLUMN m_spanc.an_spanc_log.date_maj IS 'Date d''exécution de l''opération';
 
--- Permissions
-
-ALTER TABLE m_spanc.an_spanc_log OWNER TO create_sig;
-GRANT ALL ON TABLE m_spanc.an_spanc_log TO create_sig;
-GRANT SELECT ON TABLE m_spanc.an_spanc_log TO sig_read;
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE m_spanc.an_spanc_log TO sig_edit;
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE m_spanc.an_spanc_log TO csarg; 
