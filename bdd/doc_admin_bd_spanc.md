@@ -471,7 +471,18 @@ Particularité(s) à noter :
 
 ### classes d'objets applicatives métiers :
 
-  * `` : Vue alphanumérique permettant de calculer des 
+  *  an_v_spanc_periodicite: : Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active
+  * xapps_geo_an_spanc_contr_export : Vue applicative générant les exports des contrôles
+  * xapps_geo_an_spanc_install_export : Vue applicative générant les exports des installations
+  * xapps_geo_v_spanc_rpqs_tab1 : Vue applicative ressortant les indicateurs RPQS pour le tableau de bord n°1 du SPANC
+  * xapps_geo_v_spanc_tab2 : Vue applicative ressortant les indicateurs des types de contrôles par année sur l'EPCI (à transformer par commune)
+  * xapps_geo_v_spanc_tab3 : Vue applicative ressortant le nombre total de contrôles par année et par epci
+  * xapps_geo_v_spanc_tab4 : Vue applicative ressortant le montant de la redevance et des pénalités
+  * xapps_geo_v_spanc_tab5 : Vue applicative ressortant les chiffres clés du SPANC
+  * xapps_geo_v_spanc_tri_contr : Vue applicative pour palier au bug de GEO2.2 pour l'affichage des contrôles triés par date dans la fiche de l'installation
+
+ 
+### classes d'objets applicatives métiers :
 
 ### classes d'objets applicatives grands publics sont classés dans le schéma x_apps_public :
 
