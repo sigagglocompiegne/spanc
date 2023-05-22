@@ -5,13 +5,24 @@
 ## Principes
   * **généralité** :
 
-(en cours)
+En 2022, un nouveau cadre de mutualisation s'est ouvert avec l'accueil d'une nouvelle EPCI formant ainsi le territoire du Grand Compiégnois comprenant désormais 4 EPCI. Celui-ci a fait émerger l'envie de disposer d'une application sur les contrôles de l'assainissement non collecif qui est une préoccupation partagée.
+
+Cette application repose sur le développement d'une base de données partagée, stockée dans l'entrepôt de données du GéoCompiégnois, et à la fois étanche entre chaque EPCI.
+
+L'application ainsi développée permet à chaque EPCI de disposer de ses propres données et de bénéficier des apports fonctionnels de tous.
  
  * **résumé fonctionnel** :
 
 Pour rappel des grands principes :
 
-(en cours)
+* le modèle de données et l'application répondent à un besoin de gestion administrative des dossiers ANC. Ils ne permettent pas la saisie d'un contrôle complet dans le cadre du SPANC de chaque EPCI.
+* la localisation des installations s'appuie sur le référentiel Base Adresse Locale
+* un contrôle est rattachée à une installation et une seule
+* une adresse peut disposer de n installations
+* une installation peut-être partagée par plusieurs adresses
+* l'application permet d'associer des documents, des contacts, ...
+* des statistiques pour le SPANC sont disponibles
+* la gestion des automatismes de rappel ou d'alertes sont gérées pour chaque EPCI (paramétrage possible pour chacun)
 
 ## Schéma fonctionnel
 
