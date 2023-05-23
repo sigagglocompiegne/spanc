@@ -1183,6 +1183,10 @@ begin
   	RAISE EXCEPTION 'Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous devez indiquer "Aucun" équipements contrôlés pour conclure à une absence d''installation';
    END IF;
 
+   -- si il existe déjà un contrôle avec une même date de visite, pas possible
+   if (select count(*) from m_spanc.an_spanc_controle where date_vis = new.date_vis and idinstal = new.idinstal) > 0 then 
+   RAISE exception 'Vous ne pouvez pas saisir ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste';
+   end if;
   
    -- si aucune date de visite n'est renseignée, l'enregistrement de la conformité ne peut pas avoir lieu (sauf si Non renseigné)
    if new.date_vis is not null and new.contr_concl = '00' then 
@@ -1381,6 +1385,11 @@ begin
    raise exception 'Vous ne pouvez pas modifier un contrôle d''une installation désactivée.';   
    end if;
   
+   -- si il existe déjà un contrôle avec une même date de visite, pas possible
+   if (select count(*) from m_spanc.an_spanc_controle where date_vis = new.date_vis and idinstal = new.idinstal) > 0 then 
+   RAISE exception 'Vous ne pouvez pas modifier ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste';
+   end if;
+  
    -- CONTROLE SI DATE_VISITE renseigné ne peux plus modifier modifier le prestataire
    if new.date_vis is not null and old.idpresta <> new.idpresta then 
    raise exception 'Vous ne pouvez pas modifier le prestataire car la date de visite est renseignée.';
@@ -1563,6 +1572,7 @@ $function$
 ;
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_conform() IS 'Fonction générant automatiquement la conformité selon la conclusion du contrôle et la vérification de la saisie du contrôle';
+
 
 
 -- ################################################################# Fonction - ft_m_controle_conform_after  ############################################
