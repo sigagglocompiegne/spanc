@@ -966,17 +966,17 @@ select
         replace(replace(replace(replace(
         age(case 
 	        -- cas d'un contrôle avec absence d'installation
-        	when ad.contr_concl = '10' and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_abs::text || ' month')::interval)::date
+        	when ad.contr_concl = '10' and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_abs::text || ' month')::interval)::date
         	-- cas d'un contrôle avec une conformité conforme
-	        when ad.contr_concl = '20' and ad.contr_nat in ('13','14','20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_c::text || ' year')::interval)::date
+	        when ad.contr_concl = '20' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_c::text || ' year')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité non grave (hors visite exécution de travaux)
-        	when ad.contr_concl = '40' and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
+        	when ad.contr_concl = '40' and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 			-- cas d'un contrôle avec une non-conformité non grave (pour les visites exécution de travaux)
         	when ad.contr_concl = '40' and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_trav::text || ' month')::interval)::date
         	-- cas d'un refus du contrôle
-	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
+	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (hors visite d'exécution de travaux)
-	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
+	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 			-- cas d'un contrôle avec une non-conformité grave (pour les visites d'exécution de travaux)
 	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 	        -- cas d'un contrôle lié à une demande
@@ -989,17 +989,17 @@ select
         
         case
 	        -- cas d'un contrôle avec absence d'installation
-	        when ad.contr_concl = '10' and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_abs::text || ' month')::interval)::date
+	        when ad.contr_concl = '10' and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_abs::text || ' month')::interval)::date
 	        -- cas d'un contrôle avec une conformité conforme
-	        when ad.contr_concl = '20' and ad.contr_nat in ('13','14','20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_c::text || ' year')::interval)::date
+	        when ad.contr_concl = '20' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_c::text || ' year')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité non grave (hors visite exécution de travaux)
-        	when ad.contr_concl = '40' and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
+        	when ad.contr_concl = '40' and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
         	-- cas d'un contrôle avec une non-conformité non grave (pour les visites exécution de travaux)
         	when ad.contr_concl = '40' and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_trav::text || ' month')::interval)::date
         	-- cas d'un refus du contrôle
-	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
+	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (hors visite d'exécution de travaux)
-	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
+	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (pour les visites d'exécution de travaux)
 	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 	         -- cas d'un contrôle lié à une demande
@@ -1008,17 +1008,17 @@ select
         end as date_prcontl,
         case 
 	        -- cas d'un contrôle avec absence d'installation
-        	when ad.contr_concl = '10' and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_abs::text || ' month')::interval)::date
+        	when ad.contr_concl = '10' and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_abs::text || ' month')::interval)::date
         	-- cas d'un contrôle avec une conformité conforme
-	        when ad.contr_concl = '20' and ad.contr_nat in ('13','14','20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_c::text || ' year')::interval)::date
+	        when ad.contr_concl = '20' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_c::text || ' year')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité non grave (hors visite exécution de travaux)
-        	when ad.contr_concl = '40' and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
+        	when ad.contr_concl = '40' and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
         	-- cas d'un contrôle avec une non-conformité non grave (pour les visites exécution de travaux)
         	when ad.contr_concl = '40' and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_trav::text || ' month')::interval)::date
         	-- cas d'un refus du contrôle
-	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
+	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (hors visite d'exécution de travaux)
-	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
+	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 			-- cas d'un contrôle avec une non-conformité grave (pour les visites d'exécution de travaux)
 	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date	        
 	         -- cas d'un contrôle lié à une demande
@@ -1069,12 +1069,12 @@ select
                    FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i
                    where c.idinstal = i.idinstal AND i.inst_etat = '10' and c.contr_nat <> '00'
                   GROUP BY c.idinstal) b_1 ON a.idinstal = b_1.idinstal AND a.date_trap = b_1.date_trap
-       ) ad where ad.contr_concl IN ('10','20','40','ZZ','31','32') order by tri_nb_jours      
+       ) ad where ad.contr_concl IN ('10','20','40','ZZ','31','32') order by tri_nb_jours   
        ;
 
 COMMENT ON VIEW m_spanc.an_v_spanc_periodicite IS 'Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active';
 
-                      
+                     
                    
 -- ########################################################### old_xapps_geo_v_spanc_anc ##################################################################
                    
