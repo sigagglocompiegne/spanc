@@ -22,7 +22,7 @@ L’ARC est engagée dans un plan de modernisation numérique pour l’exercice 
 
 L’ARC privilégie donc une organisation dans laquelle l’Interface Homme Machine (IHM) du métier assure l’alimentation d’un entrepôt de données territoriales. Cette stratégie « agile » permet de répondre au plus près des besoins des services dans une trajectoire soutenable assurant à la fois une bonne maitrise des flux d’information et un temps d’acculturation au sein de l’organisation.
 
-De plus cette thématique est partagée dans le cadre de la mutualisation avec les EPCI du Grand Compiégnois. La gestion du SPANC fait partie de ce cadre. La gestion des données et l'applicatif est donc partagé entre les 4 EPCI du Grand Compiégnois.
+De plus cette thématique est partagée dans le cadre de la mutualisation avec les EPCI du Grand Compiégnois. La gestion du SPANC fait partie de ce cadre. La gestion des données et l'applicatif sont donc partagés entre les 4 EPCI du Grand Compiégnois.
 
 ## Voir aussi
 
