@@ -1797,11 +1797,11 @@ if TG_OP='UPDATE' or TG_OP = 'INSERT' then
      (select verrou_max from m_spanc.an_spanc_controle where idcontr = new.id) is false and 
      new.t_doc in ('00','10','20','30','40')
      THEN
-   RAISE EXCEPTION 'ok 1 CONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
+   RAISE EXCEPTION 'CONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
  end if;
   if (select verrou_min from m_spanc.an_spanc_controle where idcontr = new.id) is true and 
   (select verrou_max from m_spanc.an_spanc_controle where idcontr = new.id) is true THEN
-   RAISE EXCEPTION ' ok 2CONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
+   RAISE EXCEPTION 'CONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
  end if;
 
 elseif TG_OP='DELETE' then
@@ -1937,7 +1937,7 @@ COMMENT ON FUNCTION m_spanc.ft_m_refresh_instal() IS 'Fonction rafraichissant la
 
 
 -- ################################################################# Fonction - ft_m_controle_adresse_associe (plus utilisée)  ############################################
-
+/*
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_adresse_associe()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -1967,7 +1967,7 @@ END;
 $function$
 ;
 COMMENT ON FUNCTION m_spanc.ft_m_controle_adresse_associe() IS 'Fonction vérifiant que l''adresse associée pour une installation est dans un rayon de 100 mètres de l''installation.';
-
+*/
 -- ####################################################################################################################################################
 -- ###                                                                                                                                              ###
 -- ###                                                                TABLE                                                                         ###
