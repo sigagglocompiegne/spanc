@@ -73,13 +73,11 @@ L'ensemble des classes d'objets de gestion sont stockés dans le schéma `m_span
    
 |Nom attribut | Définition | Type | Valeurs par défaut |
 |:---|:---|:---|:---|
-|idinstal|Identifiant interne non signifiant|bigint|nextval('an_spanc_installation_id_seq'::regclass)|
+|idinstal|Identifiant interne non signifiant|bigint|nextval('m_spanc.an_spanc_installation_id_seq'::regclass)|
 |idadresse|Identifiant de base adresse locale du Grand Compiégnois|bigint| |
 |adcompl|Complément d'adresse|text| |
 |typ_im|Type d'immeuble concerné|character varying(2)| |
-|equ_pretrait|Equipement de pré-traitement|text|'00'::character varying|
-|equ_trait|Equipement de traitement|text|'00'::character varying|
-|equ_rejet|Equipement de rejet|text|'00'::character varying|
+|nb_piece|Nombre de pièces principales|integer| |
 |inst_eh|Equivalent habitant de l'installation|character varying(2)|'00'::character varying|
 |inst_com|Installation commune à plusieurs immeubles|boolean|false|
 |inst_acontr|Installation soumis à un contrôle|boolean|true|
@@ -95,7 +93,7 @@ L'ensemble des classes d'objets de gestion sont stockés dans le schéma `m_span
 |op_sai|Opérateur ayant saisi l'information d'installation|character varying(20)| |
 |op_maj|Opérateur ayant modifier les informations d'installation|character varying(20)| |
 |epci|Acronyme de l'EPCI d'assise de l'installation|text| |
-|geom1|Géométrie du point d'adresse (uniquement pour les associations d'adresse d'installations communes)|USER-DEFINED| |
+|geom1|Géométrie du point d'adresse récupéré à la saisie pour la fonctionnalité d'association d'adresse à une installation pour la sélection via l'objet courant dans GEO et affichage des adresses dans un rayon de 50m|Geometry(point,2154)| |
 
 Particularité(s) à noter :
 * Une clé primaire existe sur le champ `idinstal` l'attribution automatique de la référence unique s'effectue via une séquence. 
@@ -125,9 +123,14 @@ Particularité(s) à noter :
 |iddsp|Identifiant de la DSP ayant réalisé le contrôle|integer| |
 |contr_nat|Origine de déclenchement du contrôle|character varying(2)|'00'::character varying|
 |equ_pretrait|Equipement de pré-traitement|text|'00'::character varying|
+|equ_pretrait_a|Autre équipement de pré-traitement|text| |
 |equ_trait|Equipement de traitement|text|'00'::character varying|
+|equ_trait_a|Autre équipement de traitement|text| |
 |equ_rejet|Equipement de rejet|text|'00'::character varying|
+|equ_rejet_a|Autre équipement de rejet|text| |
+|equ_ventil|Présence ou non d'une ventilation secondaire|character varying(1)| |
 |contr_concl|Conclusion du contrôle|character varying(2)|'00'::character varying|
+|dem_concl|Conclusion de l'analyse du dossier de demande de travaux neuf ou réhabilitation|character varying(2)|'00'::character varying|
 |contr_confor|Conformité du contrôle|character varying(2)|'00'::character varying|
 |contr_nreal|Motif de la non réalisation du contrôle|character varying(2)|'00'::character varying|
 |date_dem|Date de la demande du contrôle|timestamp without time zone| |
@@ -458,7 +461,31 @@ Valeurs possibles :
 |31|Installation présentant un défaut sanitaire|
 |32|Installation présentant un défaut environnementale|
 |40|Installation incomplète, sous-dimentionnée, avec dysfonctionnement|
-|ZZ|Non concerné (refus du contrôle)|
+|80|Refus du contrôle|
+|ZZ|Non concerné|
+
+
+---
+
+`[m_spanc].[lt_spanc_contdt]` : Liste de valeurs de la conclusion de la demande de travaux
+
+|Nom attribut | Définition |
+|:---|:---|
+|code|Code des types de la nature des contrôles|character varying(2)| |
+|valeur|Valeur des types de la nature des contrôles|text| |
+
+Particularité(s) à noter :
+* Une clé primaire existe sur le champ code 
+
+Valeurs possibles :
+
+|Code|Valeur|
+|:---|:---|
+|10|Avis favorable|
+|20|Avis défavorable|
+|30|Incomplet|
+|ZZ|Non concerné|
+|00|Non renseigné|
 
 ---
 
@@ -563,10 +590,10 @@ Valeurs possibles :
 |:---|:---|
 |00|Non renseigné|
 |10|Aucun|
+|11|Inaccessible|
 |21|Fosse septique avec bac à graisse|
 |22|Fosse septique sans bac à graisse|
 |23|Fosse toutes eaux|
-|31|Tranchée d'épandange|
 |32|Filtre à sable drainé|
 |33|Filtre à sable non drainé|
 |34|Micro-station|
@@ -578,6 +605,11 @@ Valeurs possibles :
 |45|Cours d'eau|
 |46|Réseau pluvial|
 |47|Ecoulement à la parcelle|
+|31|Tranchée d'épandage|
+|38|Filtre planté|
+|48|Fossé|
+|49|Tranchée d'infiltration|
+|99|Autre|
 |ZZ|Non concerné|
 
 ---
@@ -771,28 +803,7 @@ Valeurs possibles :
 |40|Habitation temporaire (mobil-home, caravanes, …)|
 |50|Groupement d'habitations|
 
----
 
-`[m_spanc].[lt_spanc_typinstall]` : Liste de valeurs des types d'installations ANC
-
-|Nom attribut | Définition |
-|:---|:---|
-|code|Code du type d'installation|character varying(3)| |
-|valeur|Libellé du type d'installation|text| |
-
-Particularité(s) à noter :
-* Une clé primaire existe sur le champ code 
-
-Valeurs possibles :
-
-|Code|Valeur|
-|:---|:---|
-|00|Non renseigné|
-|10|Pré-traitement|
-|20|Traitement|
-|30|Rejet|
-
----
 
 ### Classes d'objets attributaire gérant les associations (ou relation d'appartenance des objets entre eux) :
 
