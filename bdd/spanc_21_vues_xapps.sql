@@ -14,11 +14,10 @@
 
 -- ########################################################### xapps_geo_vmr_spanc_anc ##################################################################   
    
--- m_spanc.xapps_geo_v_spanc_anc
-drop view if exists m_spanc.xapps_geo_v_spanc_anc;
+-- m_spanc.xapps_geo_vmr_spanc_anc
+drop view if exists m_spanc.xapps_geo_vmr_spanc_anc;
 CREATE MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc
 AS
-
 
 WITH req_ad AS (
          SELECT a.id_adresse,
@@ -110,7 +109,8 @@ WITH req_ad AS (
         group by
         	c.id_adresse
         
-        ), req_dcontrl AS
+        ), 
+        req_dcontrl AS
 (
 
 with req_final as
@@ -119,7 +119,7 @@ with req_max as
 (
 
 (
-     --2ème passage sur adresse principale
+     --1er passage sur adresse principale
      select 
         ad.id_adresse,
         max(ad.date_vis) as date_vis,
@@ -129,7 +129,7 @@ with req_max as
         case 
 	         when ad.contr_nat = '99' then '9'
 	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-             when ad.contr_confor = 'ZZ' then '4'
+         --    when ad.contr_confor = 'ZZ' then '4'
              else '' END
         
         ,',') as tri_confor
@@ -163,7 +163,7 @@ with req_max as
         case 
 	         when ad.contr_nat = '99' then '9'
 	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-             when ad.contr_confor = 'ZZ' then '4'
+          --   when ad.contr_confor = 'ZZ' then '4'
              else '' END
         
         ,',') as tri_confor
@@ -219,7 +219,7 @@ with req_max_t as
         case 
 	         when ad.contr_nat = '99' then '9'
 	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-             when ad.contr_confor = 'ZZ' then '4'
+          --   when ad.contr_confor = 'ZZ' then '4'
              else '' END
         
         ,',') as tri_confor
@@ -253,7 +253,7 @@ with req_max_t as
         case 
 	         when ad.contr_nat = '99' then '9'
 	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-             when ad.contr_confor = 'ZZ' then '4'
+           --  when ad.contr_confor = 'ZZ' then '4'
              else '' END
         
         ,',') as tri_confor
@@ -322,7 +322,8 @@ left join req_max m on m.id_adresse = f.id_adresse where f.tri_confor = m.tri_co
     	 -- pour gérer l'affichage de la carte et dans la fiche à l'adresse (champ_calculé affiche_conformite)
     	 	case 
 	    	 	 when dc.tri_confor_m like '%9%' then 'n.r'
-	    	 	 when dc.tri_confor_m like '%4%' then 'ZZ'
+	    	 --	 when dc.tri_confor_m like '%4%' then 'ZZ'
+	    	 	 when dc.tri_confor_m like '%8%' then '80'
     	 		 when dc.tri_confor_m like '%3%' then '30'
     	 		 when dc.tri_confor_m like '%5%' then '21'
     	 	     when dc.tri_confor_m like '%2%' then '20'
@@ -359,7 +360,7 @@ COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc
 
 -- ########################################################### xapps_geo_v_spanc_tri_contr ##################################################################
 
--- m_spanc.xapps_geo_v_spanc_anc
+-- m_spanc.xapps_geo_v_spanc_tri_contr
 drop view if exists m_spanc.xapps_geo_v_spanc_tri_contr;
 CREATE OR REPLACE VIEW m_spanc.xapps_geo_v_spanc_tri_contr
 AS 
@@ -400,7 +401,8 @@ SELECT DISTINCT
              a.contr_confor,
              a.contr_nat,
              a.contr_concl,
-            a.date_vis
+             a.dem_concl,
+             a.date_vis
            FROM m_spanc.an_spanc_controle a
              JOIN ( SELECT c.idinstal,
                     max(c.date_vis) AS date_vis
@@ -413,6 +415,7 @@ select
     e.valeur as "Etat",
     case when c.contr_nat is not null then nc.valeur else 'n.r' END as "Nature du contrôle",
     case when c.contr_concl is not null then cl.valeur else 'n.r' END as "Conclusion du contrôle",
+    case when c.dem_concl is not null then dcl.valeur else 'n.r' END as "Conclusion de la demande de travaux",
     case when c.contr_confor is not null then co.valeur else 'n.r' END as "Conformité",
     
     im.valeur as "Type d'immeuble",
@@ -465,12 +468,12 @@ FROM
     left join m_spanc.lt_spanc_eh eh on eh.code = i.inst_eh
     left join m_spanc.lt_spanc_natcontr nc on nc.code = c.contr_nat
     left join m_spanc.lt_spanc_contcl cl on cl.code = c.contr_concl
+    left join m_spanc.lt_spanc_contdt dcl on dcl.code = c.dem_concl
 	;
 
 
 COMMENT ON VIEW m_spanc.xapps_geo_an_spanc_install_export 
 	IS 'Vue applicative générant les exports des installations';
-
 
 
 -- ########################################################### xapps_geo_an_spanc_contr_export ##################################################################
@@ -492,6 +495,7 @@ c.date_env as "Envoie de la demande",
 nc.valeur as "Nature du contrôle",
 -- équipement à intégrer (multivalué)
 cc.valeur as "Conclusion du contrôle",
+dcl.valeur as "Conclusion de la demande de travaux",
 co.valeur as "Conformité",
 r.valeur as "Motif de refus",
 to_char(c.date_dem,'yyyy-mm-dd') as "Date de la demande",
@@ -507,7 +511,7 @@ to_char(c.date_fact,'yyyy-mm-dd') as "Date de facturation",
 c.mont_fact as "Montant de la redevance",
 c.mont_pen as "Montant des pénalités",
 case when c.acq_fact is true then 'oui' else 'non' end as "Facture acquitée",
-i.code as "Dernier moyen d'information",
+i.valeur as "Dernier moyen d'information",
 c.observ as "Commentaires",
 a.commune as "Commune",
 c.epci as "epci"
@@ -518,7 +522,8 @@ left join m_spanc.lt_spanc_modgest g on g.code = c.mod_gest
 left join m_spanc.an_spanc_prestataire p on p.idpresta = c.idpresta 
 left join m_spanc.an_spanc_dsp d on d.iddsp = c.iddsp 
 left join m_spanc.lt_spanc_natcontr nc on nc.code = c.contr_nat 
-left join m_spanc.lt_spanc_contcl cc on cc.code = c.contr_concl 
+left join m_spanc.lt_spanc_contcl cc on cc.code = c.contr_concl
+left join m_spanc.lt_spanc_contdt dcl on dcl.code = c.dem_concl 
 left join m_spanc.lt_spanc_confor co on co.code = c.contr_confor 
 left join m_spanc.lt_spanc_refus r on r.code = c.contr_nreal  
 left join m_spanc.lt_spanc_info i on i.code = c.contr_info 
@@ -661,6 +666,7 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_rpqs_tab1
 	IS 'Vue applicative ressortant les indicateurs RPQS pour le tableau de bord n°1 du SPANC';
 
 
+
 -- ########################################################### xapps_geo_v_spanc_tab2 ##################################################################
 
 -- m_spanc.xapps_geo_v_spanc_tab2
@@ -724,6 +730,7 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab2
 	IS 'Vue applicative ressortant les indicateurs des types de contrôles par année sur l''EPCI (à transformer par commune)';
 
 -- ########################################################### xapps_geo_v_spanc_tab3 ##################################################################
+
 
 -- m_spanc.xapps_geo_v_spanc_tab3
 
@@ -835,6 +842,7 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab4
 
 
 
+
 -- ########################################################### xapps_geo_v_spanc_tab5 ##################################################################
 
 -- m_spanc.xapps_geo_v_spanc_tab5
@@ -895,49 +903,8 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab5
 	IS 'Vue applicative ressortant les chiffres clés du SPANC';
 
 
--- ########################################################### an_v_log_controle ##################################################################
-
-create or replace view m_spanc.an_v_log_controle as select * from m_spanc.an_spanc_log where
-( 
-datanew like '%bnormand%'
-or
-datanew like '%glemaitre%'
-or
-datanew like '%halexandre%'
-or
-datanew like '%kleger%'
-or
-datanew like '%mbarbosa%'
-or
-datanew like '%mgabriel%'
-or
-datanew like '%mvincelle%'
-or
-datanew like '%sherbin%'
-or
-dataold like '%bnormand%'
-or
-dataold like '%glemaitre%'
-or
-dataold like '%halexandre%'
-or
-dataold like '%kleger%'
-or
-dataold like '%mbarbosa%'
-or
-dataold like '%mgabriel%'
-or
-dataold like '%mvincelle%'
-or
-dataold like '%sherbin%'
-);
-
-COMMENT ON VIEW m_spanc.an_v_log_controle IS 'Vue interne récupérant les mouvements réalisées sur les données du SPANC par les utilisateurs avec un profil EDIT pour la phase de test';
-
-
-
-
 -- ########################################################### an_v_spanc_periodicite ##################################################################
+
 
 drop view if exists m_spanc.an_v_spanc_periodicite;
 create or replace view m_spanc.an_v_spanc_periodicite as 
@@ -974,7 +941,7 @@ select
 			-- cas d'un contrôle avec une non-conformité non grave (pour les visites exécution de travaux)
         	when ad.contr_concl = '40' and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_trav::text || ' month')::interval)::date
         	-- cas d'un refus du contrôle
-	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
+	        when ad.contr_concl = '80' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (hors visite d'exécution de travaux)
 	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 			-- cas d'un contrôle avec une non-conformité grave (pour les visites d'exécution de travaux)
@@ -997,7 +964,7 @@ select
         	-- cas d'un contrôle avec une non-conformité non grave (pour les visites exécution de travaux)
         	when ad.contr_concl = '40' and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_trav::text || ' month')::interval)::date
         	-- cas d'un refus du contrôle
-	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
+	        when ad.contr_concl = '80' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (hors visite d'exécution de travaux)
 	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (pour les visites d'exécution de travaux)
@@ -1016,7 +983,7 @@ select
         	-- cas d'un contrôle avec une non-conformité non grave (pour les visites exécution de travaux)
         	when ad.contr_concl = '40' and ad.contr_nat in ('13','14') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_trav::text || ' month')::interval)::date
         	-- cas d'un refus du contrôle
-	        when ad.contr_concl = 'ZZ' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
+	        when ad.contr_concl = '80' and ad.contr_nat in ('13','14','20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.rel_perio::text || ' month')::interval)::date
 	        -- cas d'un contrôle avec une non-conformité grave (hors visite d'exécution de travaux)
 	        when ad.contr_concl IN ('31','32') and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_perio_nc::text || ' year')::interval)::date
 			-- cas d'un contrôle avec une non-conformité grave (pour les visites d'exécution de travaux)
@@ -1069,141 +1036,131 @@ select
                    FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i
                    where c.idinstal = i.idinstal AND i.inst_etat = '10' and c.contr_nat <> '00'
                   GROUP BY c.idinstal) b_1 ON a.idinstal = b_1.idinstal AND a.date_trap = b_1.date_trap
-       ) ad where ad.contr_concl IN ('10','20','40','ZZ','31','32') order by tri_nb_jours   
+       ) ad where ad.contr_concl IN ('10','20','40','80','31','32','ZZ') order by tri_nb_jours   
        ;
 
 COMMENT ON VIEW m_spanc.an_v_spanc_periodicite IS 'Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active';
 
+-- ########################################################### xapps_an_v_spanc_dernier_etat_equi ##################################################################
+
+-- drop view if exists m_spanc.xapps_an_v_spanc_dernier_etat_equi;
+
+create or replace view m_spanc.xapps_an_v_spanc_dernier_etat_equi as
+with req_rech_contl as
+(
+-- récupération du dernier contrôle hors diagnostic initial et hors demande de travaux
+SELECT 
+
+a.idinstal,
+a.date_vis,
+a.contr_nat,
+a.equ_pretrait,
+a.equ_pretrait_a,
+a.equ_trait,
+a.equ_trait_a,
+a.equ_rejet,
+a.equ_rejet_a,
+a.equ_ventil,
+case
+    when a.contr_confor = '00' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_non_atribue.png'
+	when a.contr_confor = '10' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_conforme.png'
+	when a.contr_confor = '20' and a.contr_concl in ('31','32') then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_nonconforme.png'	
+	when a.contr_confor = '20' and a.contr_concl <> '31' and a.contr_concl <> '32' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_nonconforme_st.png'
+	when a.contr_confor = '30' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_absence_instal.png'		
+	when a.contr_confor = 'ZZ' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_refus.png'	
+END as conclusion
+FROM m_spanc.an_spanc_controle a 
+JOIN
+(SELECT c.idinstal, max(c.date_vis) AS date_vis 
+FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i
+where c.idinstal = i.idinstal and contr_nat in ('13','14','30','40','50','60') and date_vis is not null
+GROUP BY c.idinstal) b_1 
+ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
+
+union ALL
+-- diagnostic initial (à priori qu'un seul) ou demande de travaux
+select 
+ i.idinstal,
+ c.date_vis,
+ c.contr_nat,
+ c.equ_pretrait,
+ c.equ_pretrait_a,
+ c.equ_trait,
+ c.equ_trait_a,
+ c.equ_rejet,
+ c.equ_rejet_a,
+ c.equ_ventil,
+ case when c.contr_nat = '20' then 
+ case
+    when c.contr_confor = '00' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_non_atribue.png'
+	when c.contr_confor = '10' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_conforme.png'
+	when c.contr_confor = '20' and c.contr_concl in ('31','32') then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_nonconforme.png'	
+	when c.contr_confor = '20' and c.contr_concl <> '31' and c.contr_concl <> '32' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_nonconforme_st.png'
+	when c.contr_confor = '30' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_absence_instal.png'		
+	when c.contr_confor = 'ZZ' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_refus.png'	
+ END 
+ else 
+ case
+    when c.dem_concl = '10' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_favorable.png'
+	when c.dem_concl = '20' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_defavorable.png'
+	when c.dem_concl = '30' then 'https://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_incomplet.png'	
+ end end as conclusion
+from m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i where c.idinstal = i.idinstal and contr_nat IN ('11','12','20') and c.date_vis is not null
+)
+select 
+ i.idinstal,
+ case when c.idinstal is null then 'Aucune conclusion de contrôles n''est disponible pour le moment (date de visite non renseignée).' else
+ '<center><table border=1>' ||
+	'<tbody>' ||
+		'<tr>' ||
+		    '<td rowspan="2" align="center">&nbsp;</td>' ||
+			--'<td rowspan="2" align="center">&nbsp;Nature du contrôle&nbsp;</td>' ||
+			'<td rowspan="2" align="center">&nbsp;Date de visite&nbsp;</td>' ||
+			'<td colspan="3" align="center">&nbsp;Equipements&nbsp;</td>' ||
+			'<td rowspan="2" align="center">&nbsp;Ventilation&nbsp;</td>' ||
+			'<td rowspan="2" align="center">&nbsp;Décision&nbsp;</td>' ||
+		'</tr>' ||
+		'<tr>' ||
+			'<td align="center">&nbsp;Pré-traitement&nbsp;</td>' ||
+			'<td align="center">&nbsp;Traitement&nbsp;</td>' ||
+			'<td align="center">&nbsp;Rejet&nbsp;</td>' ||
+		'</tr>' ||
+  string_agg(
+			'<tr>' ||
+			'<td>&nbsp;' || case when c.contr_nat IN ('11','12','20') then 'Etat du diagnostic initial <br>&nbsp;ou de la demande de travaux' else 'Etat du dernier contrôle' end  || '&nbsp;</td>' ||
+			--'<td align="center">&nbsp;' || n.valeur || '&nbsp;</td>' ||
+			'<td align="center">&nbsp;' || to_char(c.date_vis,'yyyy-mm-dd') || '&nbsp;</td>' ||
+			'<td align="center">&nbsp;' || case when c.equ_pretrait = '99' then c.equ_pretrait_a else pt.valeur END || '&nbsp;</td>' ||
+			'<td align="center">&nbsp;' || case when c.equ_trait = '99' then c.equ_trait_a else t.valeur END || '&nbsp;</td>' ||
+			'<td align="center">&nbsp;' || case when c.equ_rejet = '99' then c.equ_rejet_a else r.valeur END || '&nbsp;</td>' ||
+			'<td align="center">&nbsp;' || 
+			case when c.equ_ventil = 'f' then 'non'
+			     when c.equ_ventil = 't' then 'oui'
+			else 'n.r' END || '&nbsp;</td>' ||
+			'<td align="center">&nbsp;<img src=" ' || c.conclusion || '" alt='''' />&nbsp;</td>' ||
+		'</tr>','' order by c.date_vis desc)
+   /*
+ ||
+'<tr><td colspan=6>' ||
+'<font size = 1>Sont listés ici :<br>' ||
+'- l''état du diagnostic initial ou de la demande de travaux<br>' ||
+'- et l''état du dernier contrôle (hors diagnostic initial et demande de travaux)' ||
+'</font>' ||
+'</td></tr>' ||
+'</tbody>' ||
+'</table></center>'
+*/
+end as affiche_tab_fin
+
+ 
+from m_spanc.an_spanc_installation i left join req_rech_contl c on i.idinstal = c.idinstal
+left join m_spanc.lt_spanc_natcontr n  on n.code = c.contr_nat
+left join m_spanc.lt_spanc_equinstall pt on pt.code = c.equ_pretrait
+left join m_spanc.lt_spanc_equinstall t on t.code = c.equ_trait
+left join m_spanc.lt_spanc_equinstall r on r.code = c.equ_rejet
+group by i.idinstal, c.idinstal;
+
+COMMENT ON VIEW m_spanc.xapps_an_v_spanc_dernier_etat_equi IS 'Vue applicative formattant l''affichage des derniers contrôles à l''installation (soit le diag initial ou le demande de travaux et le dernier contrôle';
                      
                    
--- ########################################################### old_xapps_geo_v_spanc_anc ##################################################################
-                   
-  -- m_spanc.old_xapps_geo_v_spanc_anc source
-
-CREATE OR REPLACE VIEW m_spanc.old_xapps_geo_v_spanc_anc
-AS WITH req_ad AS (
-         SELECT a_1.id_adresse,
-            a_1.commune,
-            a_1.libvoie_c,
-            a_1.numero,
-            a_1.repet,
-            ((((((((a_1.numero::text ||
-                CASE
-                    WHEN a_1.repet IS NOT NULL OR a_1.repet::text <> ''::text THEN a_1.repet
-                    ELSE ''::character varying
-                END::text) || ' '::text) || a_1.libvoie_c::text) ||
-                CASE
-                    WHEN a_1.ld_compl IS NULL OR a_1.ld_compl::text = ''::text THEN ''::text
-                    ELSE chr(10) || a_1.ld_compl::text
-                END) ||
-                CASE
-                    WHEN a_1.complement IS NULL OR a_1.complement::text = ''::text THEN ''::text
-                    ELSE chr(10) || a_1.complement::text
-                END) || chr(10)) || a_1.codepostal::text) || ' '::text) || a_1.commune::text AS adresse,
-            a_1.mot_dir,
-            a_1.libvoie_a,
-            e.iepci,
-            a_1.geom
-           FROM x_apps.xapps_geo_vmr_adresse a_1,
-            r_administratif.an_geo g,
-            r_osm.geo_osm_epci e
-          WHERE a_1.insee = g.insee::bpchar AND e.cepci::text = g.epci::text
-        ), req_nb_anc AS (
-         SELECT a_1.id_adresse,
-            count(*) AS nb_inst
-           FROM m_spanc.an_spanc_installation i,
-            x_apps.xapps_geo_vmr_adresse a_1
-          WHERE i.idadresse = a_1.id_adresse AND i.inst_etat::text = '10'::text
-          GROUP BY a_1.id_adresse
-        ), req_nb_contr AS (
-         SELECT a_1.id_adresse,
-            count(*) AS nb_contr
-           FROM m_spanc.an_spanc_installation i,
-            m_spanc.an_spanc_controle c_1,
-            x_apps.xapps_geo_vmr_adresse a_1
-          WHERE i.idadresse = a_1.id_adresse AND i.idinstal = c_1.idinstal AND i.inst_etat::text = '10'::text AND (c_1.contr_confor::text = ANY (ARRAY['10'::character varying, '20'::character varying, '30'::character varying]::text[])) AND (c_1.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[]))
-          GROUP BY a_1.id_adresse
-        ), req_dcontrl AS (
-         SELECT ad.id_adresse,
-            max(ad.date_vis) AS max,
-            string_agg(ad.contr_confor::text, ','::text) AS contr_confor,
-            string_agg(ad.contr_nat::text, ','::text) AS contr_nat,
-            string_agg(
-                CASE
-                    WHEN ad.contr_nat::text = '99'::text THEN '9'::text
-                    WHEN ad.contr_confor::text <> '00'::text AND ad.contr_confor::text <> 'ZZ'::text THEN "left"(ad.contr_confor::text, 1)
-                    WHEN ad.contr_confor::text = 'ZZ'::text THEN '4'::text
-                    ELSE ''::text
-                END, ','::text) AS tri_confor
-           FROM ( SELECT DISTINCT b_1.id_adresse,
-                    a_1.idinstal,
-                        CASE
-                            WHEN a_1.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[]) THEN '50'::character varying
-                            ELSE a_1.contr_confor
-                        END AS contr_confor,
-                        CASE
-                            WHEN a_1.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN '99'::character varying
-                            ELSE a_1.contr_nat
-                        END AS contr_nat,
-                    a_1.date_vis
-                   FROM m_spanc.an_spanc_controle a_1
-                     JOIN ( SELECT a_2.id_adresse,
-                            c_1.idinstal,
-                            max(c_1.date_vis) AS date_vis
-                           FROM m_spanc.an_spanc_controle c_1,
-                            m_spanc.an_spanc_installation i,
-                            x_apps.xapps_geo_vmr_adresse a_2
-                          WHERE c_1.idinstal = i.idinstal AND i.idadresse = a_2.id_adresse AND i.inst_etat::text = '10'::text
-                          GROUP BY c_1.idinstal, a_2.id_adresse) b_1 ON a_1.idinstal = b_1.idinstal AND a_1.date_vis = b_1.date_vis) ad
-          GROUP BY ad.id_adresse
-          ORDER BY (max(ad.date_vis)) DESC
-        )
- SELECT row_number() OVER () AS gid,
-    b.id_adresse,
-    b.commune,
-    b.libvoie_c,
-    b.libvoie_a,
-    b.numero,
-    b.repet,
-    b.adresse,
-    b.mot_dir,
-    b.iepci,
-        CASE
-            WHEN a.nb_inst IS NULL THEN 0::bigint
-            ELSE a.nb_inst
-        END AS nb_inst,
-        CASE
-            WHEN c.nb_contr IS NULL THEN 0::bigint
-            ELSE c.nb_contr
-        END AS nb_contr,
-        CASE
-            WHEN a.nb_inst = 1 THEN
-            CASE
-                WHEN dc.contr_confor IS NOT NULL AND (dc.contr_nat = ANY (ARRAY['11'::text, '12'::text])) THEN 'n.r'::character varying
-                WHEN dc.contr_confor IS NOT NULL AND (dc.contr_nat = ANY (ARRAY['13'::text, '14'::text, '20'::text, '30'::text, '40'::text, '50'::text, '60'::text])) THEN dc.contr_confor::character varying
-                ELSE 'n.r'::character varying
-            END
-            WHEN a.nb_inst > 1 THEN
-            CASE
-                WHEN dc.contr_confor IS NULL THEN 'n.r'::text
-                ELSE
-                CASE
-                    WHEN dc.tri_confor ~~ '%9%'::text THEN 'n.r'::text
-                    WHEN dc.tri_confor ~~ '%4%'::text THEN 'ZZ'::text
-                    WHEN dc.tri_confor ~~ '%3%'::text THEN '30'::text
-                    WHEN dc.tri_confor ~~ '%5%'::text THEN '21'::text
-                    WHEN dc.tri_confor ~~ '%2%'::text THEN '20'::text
-                    WHEN dc.tri_confor ~~ '%1%'::text THEN '10'::text
-                    ELSE 'n.r'::text
-                END
-            END::character varying
-            ELSE 'Aucune'::character varying
-        END AS confor,
-    b.geom
-   FROM req_ad b
-     LEFT JOIN req_nb_anc a ON b.id_adresse = a.id_adresse
-     LEFT JOIN req_nb_contr c ON a.id_adresse = c.id_adresse
-     LEFT JOIN req_dcontrl dc ON dc.id_adresse = b.id_adresse;
-
-COMMENT ON VIEW m_spanc.old_xapps_geo_v_spanc_anc IS 'Ancienne vue applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l''état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO. Remplacée par une vue matérialisée gérant également l''affichage des installations partagées entre plusieurs adresses';
 
