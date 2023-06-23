@@ -56,16 +56,7 @@ CREATE SEQUENCE m_spanc.an_spanc_contact_id_seq
     MAXVALUE 9223372036854775807
     CACHE 1;
 
--- ################################################# an_spanc_controle_id_seq #####################################################################
--- ################################################# Séquence des identifiants construisant l'identifiant des controles ##########################################
-
-CREATE SEQUENCE m_spanc.an_spanc_controle_id_seq
-    INCREMENT 1
-    START 1
-    MINVALUE 1
-    MAXVALUE 9223372036854775807
-    CACHE 1;   
-   
+ 
 -- ################################################# an_spanc_entretien_media_seq #####################################################################
 -- ################## Séquence des identifiants construisant l'identifiant des médias pour les documents liés à l'entretien ###########################
 
@@ -288,21 +279,26 @@ INSERT INTO m_spanc.lt_spanc_equinstall(
     VALUES
     ('00','Non renseigné'),
     ('10','Aucun'),
+    ('11','Inaccessible'),
     ('21','Fosse septique avec bac à graisse'),
     ('22','Fosse septique sans bac à graisse'),
     ('23','Fosse toutes eaux'),
-    ('31','Tranchée d''épandange'),
+    ('31','Tranchée d''épandage'),
     ('32','Filtre à sable drainé'),
     ('33','Filtre à sable non drainé'),
     ('34','Micro-station'),
     ('35','Filière compacte agréée'),
     ('36','Tertre'),    
     ('37','Filtre à cheminement lent'),  
+    ('38','Filtre planté'),
     ('43','Puisard'),
     ('44','Puits d''infiltration'),
     ('45','Cours d''eau'),
     ('46','Réseau pluvial'),
     ('47','Ecoulement à la parcelle'),
+    ('48','Fossé'),	
+    ('49','Tranché d''infiltration'),	
+    ('99','Autre'),	
     ('ZZ','Non concerné');
 
 
@@ -544,7 +540,8 @@ INSERT INTO m_spanc.lt_spanc_contcl(
     ('31','Installation présentant un défaut sanitaire'),
     ('32','Installation présentant un défaut environnementale'),
     ('40','Installation incomplète, sous-dimentionnée, avec dysfonctionnement'),
-    ('ZZ','Non concerné (refus du contrôle)');
+    ('80','Refus du contrôle'),
+    ('ZZ','Non concerné');
     
    
 -- ################################################################# Domaine valeur - lt_spanc_confor ############################################
@@ -586,6 +583,44 @@ INSERT INTO m_spanc.lt_spanc_confor(
     ('30','Absence d''installation'),
     ('ZZ','Non concerné (refus du contrôle)');   
    
+-- ################################################################# Domaine valeur - lt_spanc_contdt ############################################
+
+CREATE TABLE m_spanc.lt_spanc_contdt
+(
+    code character varying(2) COLLATE pg_catalog."default" NOT NULL,
+    valeur text COLLATE pg_catalog."default",
+    CONSTRAINT lt_spanc_contdt_pkkey PRIMARY KEY (code)
+)
+WITH (
+    OIDS = FALSE
+)
+TABLESPACE pg_default;
+
+COMMENT ON TABLE m_spanc.lt_spanc_contdt
+    IS 'Liste de valeurs des conformités du contrôle';
+
+COMMENT ON COLUMN m_spanc.lt_spanc_contdt.code
+    IS 'Code des conformités du contrôle';
+
+COMMENT ON COLUMN m_spanc.lt_spanc_contdt.valeur
+    IS 'Valeur des conclusions de la demande de travaux';
+
+-- Index: lt_spanc_contdt_idx
+-- DROP INDEX m_spanc.lt_spanc_contdt_idx;
+
+CREATE INDEX lt_spanc_contdt_idx
+    ON m_spanc.lt_spanc_contdt USING btree
+    (code COLLATE pg_catalog."default" ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+INSERT INTO m_spanc.lt_spanc_contdt(
+            code, valeur)
+    VALUES
+    ('00','Non renseigné'),
+    ('10','Avis favorable'),
+    ('20','Avis défavorable'),
+    ('30','Incomplet'),
+    ('ZZ','Non concerné');   
 
 -- ################################################################# Domaine valeur - lt_spanc_refus ############################################
 
@@ -838,7 +873,7 @@ INSERT INTO m_spanc.lt_spanc_modgest(
 -- ###                                                                                                                                              ###
 -- ####################################################################################################################################################   
 
-   
+
 -- ################################################################# Fonction - ft_r_autorite_competente_user_login (public)  ############################################   
 
 CREATE OR REPLACE FUNCTION public.ft_r_autorite_competente_user_login()
@@ -861,6 +896,8 @@ $function$
 
 COMMENT ON FUNCTION public.ft_r_autorite_competente_user_login() 
 IS 'Fonction trigger affecter l''autorité compétente en fonction de l''utilisateur de saisie';
+
+
 
 
 -- ################################################################# Fonction - ft_m_idcontr  ############################################
@@ -926,7 +963,7 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_verif_ref_cad() 
 IS 'Fonction trigger vérifiant la saisie des références cadastrales';
 
- 
+
 
 -- ################################################################# Fonction - ft_m_controle_saisie_instal  ############################################
 
@@ -997,6 +1034,7 @@ COMMENT ON FUNCTION m_spanc.ft_m_controle_saisie_instal()
 IS 'Fonction trigger contrôlant la saisie et la cohérence des données de l''installation';
 
 
+
 -- ################################################################# Fonction - ft_m_controle_saisie_contact  ############################################
 
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_saisie_contact()
@@ -1009,12 +1047,7 @@ BEGIN
 
 	if TG_OP = 'INSERT' or  TG_OP = 'UPDATE' then	
 	-- contrôle sur la saisie des références téléphoniques ....
-	/*
-    IF (trim(new.ref_telp) IS NULL OR trim(new.ref_telp) = '') AND (trim(new.ref_tel) IS NULL OR trim(new.ref_tel) = '') 
-    AND (trim(new.ref_email) IS NULL OR trim(new.ref_email) = '') THEN
-	RAISE EXCEPTION 'Vous devez au moins remplir un n° de téléphone ou un email pour créer un contact';
-	END IF;
-	*/
+
 	IF  trim(new.ref_tel) IS NOT NULL AND trim(new.ref_tel) <> '' THEN
 		IF left(new.ref_tel,1) <> '0' THEN
 			RAISE EXCEPTION 'Le numéro de téléphone ne peut commencer que par le chiffre 0.';
@@ -1058,15 +1091,6 @@ BEGIN
 	   END IF;
 	END IF;
 
- -- si il y a plusieurs contacts pour la facturation pas possible
-    /*
-	IF new.factu_cont is true THEN
-		IF
-		(SELECT count(*) FROM m_spanc.an_spanc_contact c, m_spanc.lk_spanc_contact lk, WHERE lk.idcontact = c.idcontact AND idcontact = NEW.idcontact and new.factu_cont = true) > 1 THEN
-		RAISE EXCEPTION 'Vous ne pouvez pas avoir plus de 1 contact pour la facturation';
-		end if;
-	END IF;
-    */
     -- un patronyme doit-être saisie si pas autre
 	IF new.ref_typ <> '99' and new.ref_patro is null THEN
 		
@@ -1092,7 +1116,11 @@ COMMENT ON FUNCTION m_spanc.ft_m_controle_saisie_contact() IS 'Fonction de contr
 
 
 
+
+
 -- ################################################################# Fonction - ft_m_controle_conform  ############################################
+
+
 
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_conform()
  RETURNS trigger
@@ -1128,8 +1156,77 @@ begin
      			RAISE EXCEPTION 'Vous ne pouvez pas insérer un nouveau contrôle de meilleur qualité après avoir saisi un contrôle avec une non-conformité grave.';
 
     end if;
+   
 
-	
+    -- SI L'INSTALLATION DISPOSE DEJA D'UN CONTROLE ON NE PEUT PAS AJOUTER UNE ANALYSE DE DEMANDE DE TRAVAUX (hormis une demande de travaux) 
+ 	IF (SELECT count(*) FROM  m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i 
+ 	WHERE c.idinstal = i.idinstal AND i.idinstal = NEW.idinstal and contr_nat not in ('11','12')) > 0 
+ 	AND NEW.contr_nat IN ('11','12') 
+ 	
+ 	THEN
+ 		RAISE EXCEPTION 'Vous ne pouvez pas insérer une demande de travaux car il existe déjà un contrôle sur cette installation. Vous devez créer une nouvelle installation et y insérer votre demande.';
+ 	END IF;
+ 
+    -- SI L'INSTALLATION DISPOSE DEJA D'UN DIAGNOSTIC ON NE PEUT PAS EN AJOUTER UN AUTRE IDEM
+    IF (SELECT count(*) FROM  m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i 
+    WHERE c.idinstal = i.idinstal AND i.idinstal = NEW.idinstal AND c.contr_nat = '20') > 0 
+ 	AND NEW.contr_nat IN ('20') 
+ 	
+ 	THEN
+ 		RAISE EXCEPTION 'Vous ne pouvez pas insérer un nouveau diagnostic initial, il en existe déjà un sur cette installation.';
+ 	END IF;
+ 
+    -- SI AJOUT d'un diagnostic initial ne doit pas avoir de contrôle précédent
+    IF (SELECT count(*) FROM  m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i 
+    WHERE c.idinstal = i.idinstal AND i.idinstal = NEW.idinstal and contr_nat <> '20') > 0 
+ 	AND NEW.contr_nat = '20' 
+ 	
+ 	THEN
+ 		RAISE EXCEPTION 'Vous ne pouvez pas insérer un diagnostic initial car des contrôles existent déjà pour cette installation.';
+ 	END IF;
+ 
+    -- SI L'INSTALLATION DISPOSE D'UNE DEMANDE DE TRAVAUX NEUF OU REHAB, LA VISTE D'EXECUTION DOIT ETRE NEUF OU REHAB
+    -- neuf
+    IF (SELECT count(*) FROM  m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i 
+ 	WHERE c.idinstal = i.idinstal AND i.idinstal = NEW.idinstal and contr_nat = '11') > 0 
+ 	AND NEW.contr_nat = '14' 
+ 	
+ 	THEN
+ 		RAISE EXCEPTION 'Vous ne pouvez pas insérer une visite d''exécution pour des travaux de réhabilitation car il existe une demande de travaux neuf.';
+ 	END IF;
+    -- réhabilitation
+    IF (SELECT count(*) FROM  m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i 
+ 	WHERE c.idinstal = i.idinstal AND i.idinstal = NEW.idinstal and contr_nat = '12') > 0 
+ 	AND NEW.contr_nat = '13' 
+ 	
+ 	THEN
+ 		RAISE EXCEPTION 'Vous ne pouvez pas insérer une visite d''exécution pour des travaux neufs car il existe une demande de travaux de réhabilitation.';
+ 	END IF;
+ 
+    
+  
+ 
+    -- si une demande de travaux, la conclusion du contrôle est ZZ (non concerné)
+ 	IF NEW.contr_nat IN ('11','12') THEN
+ 		NEW.contr_concl = 'ZZ';
+ 	END if;
+ 	
+ 
+ 	-- si un contrôle, la conclusion de la demande de travaux est ZZ (non concerné)
+    IF NEW.contr_nat <> '11' AND  NEW.contr_nat <> '12' THEN
+ 		NEW.dem_concl = 'ZZ';
+ 	END if;
+ 	
+    -- si une demande de travaux sans conclusion erreur
+    IF new.contr_nat IN ('11','12') and NEW.dem_concl IS null THEN
+       RAISE EXCEPTION 'La conclusion de la demande de travaux ne peut pas être nulle.';
+    END IF;
+   
+     -- si un contrôle sans conclusion erreur
+    IF new.contr_nat not IN ('11','12') and NEW.contr_concl IS null THEN
+       RAISE EXCEPTION 'La conclusion du contrôle ne peut pas être nulle.';
+    END IF;
+ 	
 	-- SAISIE AUTOMATIQUE DE LA CONFORMITE
 	
 	-- si conclusion = absence d'installation
@@ -1152,38 +1249,133 @@ begin
    
     -- si conclusion = refus du contrôles
 	-- conformité = conforme 
-    IF NEW.contr_concl = 'ZZ' THEN
+    IF NEW.contr_concl = '80' THEN
        NEW.contr_confor := 'ZZ'; 
     end if;
    
-    -- si conclusion = N.R
+    -- si conclusion = N.R ou non concerné car une demande
 	-- conformité = N.R 
-    IF NEW.contr_concl = '00' THEN
+    IF NEW.contr_concl IN ('00','ZZ') THEN
        NEW.contr_confor := '00'; 
     END IF;
+   
+   -- si une demande de travaux à une conclusion (hors non renseigné et non concerné) sans date de visite
+   if new.date_vis is null and new.dem_concl in ('10','20','30') then
+   
+	raise exception 'Vous devez renseigner une date de visite lorsque vous saisissez un avis pour une demande de travaux. Cette date correspond à la date de votre analyse de la demande.';
+	   
+	end if;
 
-  
- 	-- si il y a au moins une installation à NR ou à aucun, la conclusion ne peut pas être différente de installation incomplète
-   if new.contr_concl <> '10' THEN
-   IF NEW.contr_concl <> '40' and NEW.contr_concl <> '00' and NEW.contr_concl <> '20' and NEW.contr_concl <> 'ZZ'
-   	  AND NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet LIKE '%00%' THEN
-   	RAISE EXCEPTION 'Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous ne pouvez pas avoir un équipement renseignés à "Non renseigné"';
-   END IF;
+    -- si une demande de travaux n'a pas de conclusion (hors non renseigné et non concerné) pas de date de visite possible
+   if new.date_vis is not null AND NEW.contr_nat IN ('11','12') and new.dem_concl in ('00','ZZ') then
+   
+	raise exception 'Vous ne pouvez pas avoir une date de visite avec une conclusion à "Non renseignée" ou à "Non concerné".';
+	   
+	end if;
+
+
+     
+    -- GESTION DES COHERENCES DANS LA SAISIE DES EQUIPEMENTS 
+    
+    -- SI demande de travaux avec avis
+    if new.dem_concl in ('10','20','30') then
+    	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%11%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%10%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné", "Aucun" ou "Inaccessible"';
+    	end if;
+    	if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    	end if;
+ 		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    	end if;   
+     	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    	end if;
+    end if;
+    
+    -- SI autre que demande de travaux
+        -- le non renseigné est possible que pour une conclusion non renseignée 
+    
+    if new.contr_concl in ('20','31','32','40') then
+    	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné" avec une conclusion du contrôle autre que "Non renseigné".';
+    	end if;
+        if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    	end if;
+ 		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    	end if;   
+     	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    	end if;
+        if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%10%' and new.equ_trait like '%99%') 
+        or (new.equ_rejet like '%10%' and new.equ_rejet like '%99%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Aucun" et "Autre".';
+       	end if;
+        if (new.equ_pretrait like '%00%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%00%' and new.equ_trait like '%99%') 
+        or (new.equ_rejet like '%00%' and new.equ_rejet like '%99%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non renseigné" et "Autre".';
+    	end if;
+        if (new.equ_pretrait like '%11%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%11%' and new.equ_trait like '%99%') 
+        or (new.equ_rejet like '%11%' and new.equ_rejet like '%99%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Autre".';
+    	end if;
+        if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%11%') or (new.equ_trait like '%10%' and new.equ_trait like '%11%') 
+        or (new.equ_rejet like '%10%' and new.equ_rejet like '%11%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Aucun".';
+    	end if;
+        if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%ZZ%') or (new.equ_trait like '%10%' and new.equ_trait like '%ZZ%') 
+        or (new.equ_rejet like '%10%' and new.equ_rejet like '%ZZ%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non concerné" et "Aucun".';
+    	end if;
+
+    
+    
+    end if;
+    
+   -- pour un contrôle avec une conclusion Absence d'installation, tous les équipements à "Aucun"
+    if new.contr_concl IN ('10','80') and new.equ_pretrait || new.equ_trait || new.equ_rejet <> '101010'  THEN
+     raise EXCEPTION 'Vous devez indiquer aucun équipement pour toutes les filières en cas d''un contrôle avec une conclusion "Absence d''installation".';
     end if;
    
-       -- si contrôle conforme on ne peut pas avoir d'équipement à '00', 'ZZ' ou '10'
-   if  (new.contr_concl = '20' and NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet like '%00%')
-       or (new.contr_concl = '20' and NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet like '%10%')
-   THEN
-  	RAISE EXCEPTION 'Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous ne pouvez pas laisser des équipements à "Non renseignés" ou à "Aucun"';
-   END IF;
- 	
-   -- si aucun équipement, seule l'absence d'installation peut être indiqué en contrôle
-   if  new.contr_concl = '10' and NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet <> '101010' THEN
-  	RAISE EXCEPTION 'Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous devez indiquer "Aucun" équipements contrôlés pour conclure à une absence d''installation';
-   END IF;
+   -- si conclusion pas de défaut, un équipement ne peut pas être inaccessible ou à aucun
+    if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_pretrait in ('10','11') or new.equ_rejet in ('10','11')) then
+ 		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"';
+ 	end if;
 
-   -- si il existe déjà un contrôle avec une même date de visite, pas possible
+  -- ##### FIN DE LA GESTION DES ERREURS LIEES AUX LISTES DES EQUIPEMENTS #######
+  
+ 
+  -- ##### GESTION DES ERREURS LIEES AUX LISTES DES EQUIPEMENTS #######
+  	-- si l'option autre n'est pas coché, la valeur est forcée à null dans le cas ou la case aurait été cochée et une valeur saisie
+    if  (new.equ_pretrait <> '99' or new.equ_pretrait not like '%99%') then 
+    new.equ_pretrait_a := null;
+    end if;
+    if  (new.equ_trait <> '99' or new.equ_trait not like '%99%') then 
+    new.equ_trait_a := null;
+    end if;
+    if  (new.equ_rejet <> '99' or new.equ_rejet not like '%99%') then 
+    new.equ_rejet_a := null;
+    end if;
+ 
+    -- GESTION DES EQUIPEMENTS A AUTRE
+    -- si je choisie autre dans les équipements je dois obligatoirement saisir le nom
+ 	-- pré-traitement
+    if (new.equ_pretrait = '99' or new.equ_pretrait like '%99%') and (new.equ_pretrait_a is null or new.equ_pretrait_a = '') then 
+        RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+       
+    end if;
+       -- traitement
+    if (new.equ_trait = '99' or new.equ_trait like '%99%') and (new.equ_trait_a is null or new.equ_trait_a = '') then 
+       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+    end if;
+    -- rejet
+    if (new.equ_rejet = '99' or new.equ_rejet like '%99%') and (new.equ_rejet_a is null or new.equ_rejet_a = '') then 
+       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+    end if;
+ 
+    -- si il existe déjà un contrôle avec une même date de visite, pas possible
    if (select count(*) from m_spanc.an_spanc_controle where date_vis = new.date_vis and idinstal = new.idinstal) > 0 then 
    RAISE exception 'Vous ne pouvez pas saisir ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste';
    end if;
@@ -1198,12 +1390,6 @@ begin
    RAISE EXCEPTION 'Vous ne pouvez pas enregistrer le contrôle avec une conclusion différente de "Non renseigné" si vous n''indiquez pas une date de visite.';
    end if;
 
-  /*
-    -- aucune date de visite ne doit être renseignée si la nature du contrôle est liée à une demande de travaux)
-   if new.date_vis is not null and new.contr_nat in ('11','12') then 
-   RAISE EXCEPTION 'Vous ne pouvez pas indiquer une date de visite dans le cadre d''un contrôle lié à une demande de travaux.';
-   end if;
-*/
   -- si aucune date de demande
   if new.date_dem is null then
    RAISE EXCEPTION 'Vous devez renseigner obligatoirement la date de la demande.';
@@ -1347,7 +1533,26 @@ begin
 	RAISE EXCEPTION 'VERROU MAXIMUM - vous ne pouvez pas modifier un contrôle transmis avec une facture acquitée.';
     end if;
   
-  
+     -- UN CONTROLE SI DEJA UN CONTROLE NE PEUT PAS AJOUTER UNE ANALYSE DE DEMANDE DE TRAVAUX 
+ 	/*IF NEW.contr_nat <> OLD.contr_nat AND NEW.contr_nat IN ('11','12') 
+ 	THEN
+ 				RAISE EXCEPTION 'Vous ne pouvez pas modifier ce contrôle en une demande de travaux car il existe déjà un contrôle sur cette installation. Vous devez créer une nouvelle installation et y insérer votre demande.';
+ 	END IF;
+ 	*/
+    -- GESTION automatique si demande ou contrôle
+ 
+    -- si une demande de travaux, la conclusion du contrôle est ZZ (non concerné)
+ 	IF NEW.contr_nat IN ('11','12') THEN
+ 		NEW.contr_concl = 'ZZ';
+ 	END if;
+ 	
+ 
+ 	-- si un contrôle, la conclusion de la demande de travaux est ZZ (non concerné)
+    IF NEW.contr_nat <> '11' AND  NEW.contr_nat <> '12' THEN
+ 		NEW.dem_concl = 'ZZ';
+ 	END if;
+   
+     
 	-- SAISIE AUTOMATIQUE DE LA CONFORMITE
 	
 	-- si conclusion = absence d'installation
@@ -1370,23 +1575,140 @@ begin
    
     -- si conclusion = refus du contrôles
 	-- conformité = conforme 
-    IF NEW.contr_concl = 'ZZ' THEN
+    IF NEW.contr_concl = '80' THEN
        NEW.contr_confor := 'ZZ'; 
     end if;
    
-    -- si conclusion = N.R
+    -- si conclusion = N.R ou non concerné
 	-- conformité = N.R 
-    IF NEW.contr_concl = '00' THEN
+    IF NEW.contr_concl IN ('00','ZZ') THEN
        NEW.contr_confor := '00'; 
     END IF;
+
+   -- si une demande de travaux à une conclusion (hors non renseigné et non concerné) sans date de visite
+   if new.date_vis is null and new.dem_concl in ('10','20','30') then
+   
+	raise exception 'Vous devez renseigner une date de visite lorsque vous saisissez un avis pour une demande de travaux. Cette date correspond à la date de votre analyse de la demande.';
+	   
+	end if;
+
+    -- si une demande de travaux n'a pas de conclusion (hors non renseigné et non concerné) pas de date de visite possible
+   if new.date_vis is not null AND NEW.contr_nat IN ('11','12') and new.dem_concl in ('00','ZZ') then
+   
+	raise exception 'Vous ne pouvez pas avoir une date de visite avec une conclusion à "Non renseignée" ou à "Non concerné".';
+	   
+	end if;
+
+    -- GESTION DES COHERENCES DANS LA SAISIE DES EQUIPEMENTS 
+    
+    -- SI demande de travaux avec avis
+    if new.dem_concl in ('10','20','30') then
+    	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%11%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%10%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné", "Aucun" ou "Inaccessible"';
+    	end if;
+    	if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    	end if;
+ 		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    	end if;   
+     	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    	end if;
+    end if;
+    
+    -- SI autre que demande de travaux
+        -- le non renseigné est possible que pour une conclusion non renseignée 
+    
+    if new.contr_concl in ('20','31','32','40') then
+    	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné" avec une conclusion du contrôle autre que "Non renseigné".';
+    	end if;
+        if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    	end if;
+ 		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    	end if;   
+     	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    	end if;
+        if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%10%' and new.equ_trait like '%99%') 
+        or (new.equ_rejet like '%10%' and new.equ_rejet like '%99%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Aucun" et "Autre".';
+       	end if;
+        if (new.equ_pretrait like '%00%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%00%' and new.equ_trait like '%99%') 
+        or (new.equ_rejet like '%00%' and new.equ_rejet like '%99%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non renseigné" et "Autre".';
+    	end if;
+        if (new.equ_pretrait like '%11%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%11%' and new.equ_trait like '%99%') 
+        or (new.equ_rejet like '%11%' and new.equ_rejet like '%99%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Autre".';
+    	end if;
+        if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%11%') or (new.equ_trait like '%10%' and new.equ_trait like '%11%') 
+        or (new.equ_rejet like '%10%' and new.equ_rejet like '%11%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Aucun".';
+    	end if;
+        if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%ZZ%') or (new.equ_trait like '%10%' and new.equ_trait like '%ZZ%') 
+        or (new.equ_rejet like '%10%' and new.equ_rejet like '%ZZ%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non concerné" et "Aucun".';
+    	end if;
+        if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%00%') or (new.equ_trait like '%10%' and new.equ_trait like '%00%') 
+        or (new.equ_rejet like '%10%' and new.equ_rejet like '%00%') THEN
+    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non concerné" et "Non renseigné".';
+    	end if;
+
+    end if;
+   
+   -- pour un contrôle avec une conclusion Absence d'installation, tous les équipements à "Aucun"
+    if new.contr_concl IN ('10','80') and new.equ_pretrait || new.equ_trait || new.equ_rejet <> '101010'  THEN
+     raise EXCEPTION 'Vous devez indiquer aucun équipement pour toutes les filières en cas d''un contrôle avec une conclusion "Absence d''installation".';
+    end if;
+   
+   -- si conclusion pas de défaut, un équipement ne peut pas être inaccessible ou à aucun
+    if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_pretrait in ('10','11') or new.equ_rejet in ('10','11')) then
+ 		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"';
+ 	end if;
+
+  -- ##### FIN DE LA GESTION DES ERREURS LIEES AUX LISTES DES EQUIPEMENTS #######
+  
+ 
+  -- ##### GESTION DES ERREURS LIEES AUX LISTES DES EQUIPEMENTS #######
+  	-- si l'option autre n'est pas coché, la valeur est forcée à null dans le cas ou la case aurait été cochée et une valeur saisie
+    if  (new.equ_pretrait <> '99' or new.equ_pretrait not like '%99%') then 
+    new.equ_pretrait_a := null;
+    end if;
+    if  (new.equ_trait <> '99' or new.equ_trait not like '%99%') then 
+    new.equ_trait_a := null;
+    end if;
+    if  (new.equ_rejet <> '99' or new.equ_rejet not like '%99%') then 
+    new.equ_rejet_a := null;
+    end if;
+ 
+    -- GESTION DES EQUIPEMENTS A AUTRE
+    -- si je choisie autre dans les équipements je dois obligatoirement saisir le nom
+ 	-- pré-traitement
+    if (new.equ_pretrait = '99' or new.equ_pretrait like '%99%') and (new.equ_pretrait_a is null or new.equ_pretrait_a = '') then 
+        RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+       
+    end if;
+       -- traitement
+    if (new.equ_trait = '99' or new.equ_trait like '%99%') and (new.equ_trait_a is null or new.equ_trait_a = '') then 
+       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+    end if;
+    -- rejet
+    if (new.equ_rejet = '99' or new.equ_rejet like '%99%') and (new.equ_rejet_a is null or new.equ_rejet_a = '') then 
+       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+    end if;
+
 
    -- un contrôle lié à une installation supprimée ne peut pas être modifiée
    if (select count(*) from m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i where i.idinstal = c.idinstal and i.inst_etat='20' and c.idcontr = new.idcontr) > 0 THEN
    raise exception 'Vous ne pouvez pas modifier un contrôle d''une installation désactivée.';   
    end if;
   
-   -- si il existe déjà un contrôle avec une même date de visite, pas possible
-   if (select count(*) from m_spanc.an_spanc_controle where date_vis = new.date_vis and idinstal = new.idinstal) > 0 then 
+     -- si il existe déjà un contrôle avec une même date de visite, pas possible
+    if (select count(*) from m_spanc.an_spanc_controle where date_vis = new.date_vis and idinstal = new.idinstal) > 0 and new.date_vis <> old.date_vis then 
    RAISE exception 'Vous ne pouvez pas modifier ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste';
    end if;
   
@@ -1599,6 +1921,7 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_controle_conform_after() IS 'Fonction générant la non insertion d''contrôle si l''installation est désactivée (supprimer le contrôle inséré et renvoi un message';
 
 
+
 -- ################################################################# Fonction - ft_m_controle_dsp  ############################################   
    
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_dsp()
@@ -1647,6 +1970,8 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_dsp() IS 'Fonction générant les contrôles de saisies des DSP';
 
+
+
 -- ################################################################# Fonction - ft_m_controle_presta  ############################################
 
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_presta()
@@ -1673,53 +1998,8 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_presta() IS 'Fonction générant les contrôles de saisies des prestataires';
 
+
    
--- ################################################################# Fonction - ft_m_update_install_equi  ############################################
-
-CREATE OR REPLACE FUNCTION m_spanc.ft_m_update_install_equi()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
-
-begin
-
-	
- -- mise à jour des équipements de l'installation par le dernier contrôle uniquement
-
--- récupération de la date de visite du dernier contrôle pour comparaison avec le contrôle modifié
-IF (select ad.idcontr
-      FROM  
-      (       
-      SELECT DISTINCT 
-             a.idcontr,
-             a.idinstal,
-            a.date_vis
-           FROM m_spanc.an_spanc_controle a
-             JOIN ( SELECT c.idinstal,
-                    max(c.date_vis) AS date_vis
-                   FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i
-                   where c.idinstal = i.idinstal AND date_trap is not null
-                  GROUP BY c.idinstal) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
-                  ) ad 
-                  WHERE ad.idinstal = new.idinstal
-                  group by ad.idcontr) = NEW.idcontr
- THEN	
-	
- UPDATE m_spanc.an_spanc_installation SET 
- 	equ_pretrait = NEW.equ_pretrait,
- 	equ_trait = NEW.equ_trait,
- 	equ_rejet = NEW.equ_rejet
- WHERE idinstal = NEW.idinstal;
-END IF;
- return new ;
-
-
-END;
-
-$function$
-;
-
-COMMENT ON FUNCTION m_spanc.ft_m_update_install_equi() IS 'Fonction générant la mise à jour des équipements au niveau de l''installation';
 
 
 -- ################################################################# Fonction - ft_m_controle_conf  ############################################
@@ -1749,6 +2029,9 @@ $function$
 ;
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_conf() IS 'Fonction sécurisant la non suppression de la configuration des périodicités.';
+
+
+
 
 
 -- ################################################################# Fonction - ft_m_controle_instal_media  ############################################
@@ -1781,6 +2064,8 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_controle_instal_media() IS 'Fonction générant les contrôles de saisies des médias pour les installations';
 
 
+
+
 -- ################################################################# Fonction - ft_m_controle_media  ############################################
 
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_media()
@@ -1801,7 +2086,7 @@ if TG_OP='UPDATE' or TG_OP = 'INSERT' then
  end if;
   if (select verrou_min from m_spanc.an_spanc_controle where idcontr = new.id) is true and 
   (select verrou_max from m_spanc.an_spanc_controle where idcontr = new.id) is true THEN
-   RAISE EXCEPTION 'CONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
+   RAISE EXCEPTION 'CCONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
  end if;
 
 elseif TG_OP='DELETE' then
@@ -1826,6 +2111,7 @@ $function$
 ;
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_media() IS 'Fonction générant les contrôles de saisies des médias pour les contrôles';
+
 
 
 -- ################################################################# Fonction - ft_m_spanc_log  ############################################
@@ -1936,38 +2222,11 @@ $function$
 COMMENT ON FUNCTION m_spanc.ft_m_refresh_instal() IS 'Fonction rafraichissant la vue xapps_geo_vmr_spanc_anc pour localisater les adresses avec ou sans installation.';
 
 
--- ################################################################# Fonction - ft_m_controle_adresse_associe (plus utilisée)  ############################################
-/*
-CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_adresse_associe()
- RETURNS trigger
- LANGUAGE plpgsql
-AS $function$
 
-begin
 
-if (
-with 
-req_buffer as 
-(
-select st_buffer(a.geom,100) as geom_buffer from x_apps.xapps_geo_vmr_adresse a, m_spanc.an_spanc_installation i where i.idadresse = a.id_adresse and i.idinstal = new.idinstal
-)
-select 
-case when st_intersects(a1.geom,b.geom_buffer) is true then 'adresse possible' else 'adresse impossible' end as test
-from 
-req_buffer b, x_apps.xapps_geo_vmr_adresse a1 where a1.id_adresse = new.idadresse) = 'adresse impossible'
-then 
-RAISE EXCEPTION 'L''adresse associée est à plus de 100 mètres de l''installation sélectionnée. Veuillez vérifier votre association.';
 
-end if;
 
- return new ;
 
-END;
-
-$function$
-;
-COMMENT ON FUNCTION m_spanc.ft_m_controle_adresse_associe() IS 'Fonction vérifiant que l''adresse associée pour une installation est dans un rayon de 100 mètres de l''installation.';
-*/
 -- ####################################################################################################################################################
 -- ###                                                                                                                                              ###
 -- ###                                                                TABLE                                                                         ###
@@ -1983,19 +2242,17 @@ CREATE TABLE m_spanc.an_spanc_installation
     idadresse bigint NOT NULL,
     adcompl text COLLATE pg_catalog."default",
     typ_im character varying(2) COLLATE pg_catalog."default",
-    equ_pretrait text COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
-    equ_trait text COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,    
-    equ_rejet text COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,    
+    nb_piece int4,
     inst_eh character varying(2) COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
     inst_com boolean NOT NULL DEFAULT false,
     inst_acontr boolean NOT NULL DEFAULT true,
     inst_conv boolean NOT NULL DEFAULT false,
     date_crea timestamp without time zone,
     inst_age integer,
-	inst_etat character varying(2) COLLATE pg_catalog."default" DEFAULT '10'::character varying not NULL,
-	cad_sect character varying(2) COLLATE pg_catalog."default",
-	cad_par character varying(4) COLLATE pg_catalog."default",
-	observ character varying(5000) COLLATE pg_catalog."default",
+    inst_etat character varying(2) COLLATE pg_catalog."default" DEFAULT '10'::character varying not NULL,
+    cad_sect character varying(2) COLLATE pg_catalog."default",
+    cad_par character varying(4) COLLATE pg_catalog."default",
+    observ character varying(5000) COLLATE pg_catalog."default",
     date_sai timestamp without time ZONE NOT NULL,
     date_maj timestamp without time zone,
     op_sai character varying(20) COLLATE pg_catalog."default" NOT NULL,
@@ -2032,12 +2289,8 @@ COMMENT ON COLUMN m_spanc.an_spanc_installation.adcompl
     IS 'Complément d''adresse';   
 COMMENT ON COLUMN m_spanc.an_spanc_installation.typ_im
     IS 'Type d''immeuble concerné';
-COMMENT ON COLUMN m_spanc.an_spanc_installation.equ_pretrait
-    IS 'Equipement de pré-traitement';
-   COMMENT ON COLUMN m_spanc.an_spanc_installation.equ_trait
-    IS 'Equipement de traitement';
-COMMENT ON COLUMN m_spanc.an_spanc_installation.equ_rejet
-    IS 'Equipement de rejet';   
+COMMENT ON COLUMN m_spanc.an_spanc_installation.nb_piece
+    IS 'Nombre de pièces principales';
 COMMENT ON COLUMN m_spanc.an_spanc_installation.inst_eh
     IS 'Equivalent habitant de l''installation';
 COMMENT ON COLUMN m_spanc.an_spanc_installation.inst_com
@@ -2231,15 +2484,20 @@ CREATE TABLE m_spanc.an_spanc_controle
     idcontr text COLLATE pg_catalog."default" NOT NULL,
     idcontr_epci text COLLATE pg_catalog."default",
     idinstal bigint NOT NULL,
-	mod_gest character varying(2) COLLATE pg_catalog."default" NOT NULL,
-	idpresta integer,
-	iddsp integer,
-	date_env timestamp without time zone,
+    mod_gest character varying(2) COLLATE pg_catalog."default" NOT NULL,
+    idpresta integer,
+    iddsp integer,
+    date_env timestamp without time zone,
     contr_nat character varying(2) COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
     equ_pretrait text COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
+    equ_pretrait_a text COLLATE pg_catalog."default",	
     equ_trait text COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,    
+    equ_trait_a text COLLATE pg_catalog."default,        
     equ_rejet text COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,    
+    equ_rejet_a text COLLATE pg_catalog."default",    	
+    equ_ventil text COLLATE pg_catalog."default", 	
     contr_concl character varying(2) COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
+    dem_concl character varying(2) COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,	
     contr_confor character varying(2) COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
     contr_nreal character varying(2) COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
     date_dem timestamp without time zone,
@@ -2257,7 +2515,7 @@ CREATE TABLE m_spanc.an_spanc_controle
     verrou_max boolean not null default false,
     contr_info character varying(2) COLLATE pg_catalog."default" DEFAULT '00'::character varying not NULL,
     observ character varying(5000) COLLATE pg_catalog."default",
-	date_sai timestamp without time zone,
+    date_sai timestamp without time zone,
     date_maj timestamp without time zone,
     op_sai character varying(20) COLLATE pg_catalog."default" NOT NULL,
     op_maj character varying(20) COLLATE pg_catalog."default",
@@ -2312,12 +2570,22 @@ COMMENT ON COLUMN m_spanc.an_spanc_controle.contr_nat
     IS 'Origine de déclenchement du contrôle';
 COMMENT ON COLUMN m_spanc.an_spanc_controle.equ_pretrait
     IS 'Equipement de pré-traitement';
-   COMMENT ON COLUMN m_spanc.an_spanc_controle.equ_trait
+COMMENT ON COLUMN m_spanc.an_spanc_controle.equ_pretrait_a
+    IS 'Autre équipement de pré-traitement';	
+COMMENT ON COLUMN m_spanc.an_spanc_controle.equ_trait
     IS 'Equipement de traitement';
+COMMENT ON COLUMN m_spanc.an_spanc_controle.equ_trait_a
+    IS 'Autre équipement de traitement';	
 COMMENT ON COLUMN m_spanc.an_spanc_controle.equ_rejet
-    IS 'Equipement de rejet';   
+    IS 'Equipement de rejet';  
+COMMENT ON COLUMN m_spanc.an_spanc_controle.equ_rejet_a
+    IS 'Autre équipement de rejet'; 	
+COMMENT ON COLUMN m_spanc.an_spanc_controle.equi_ventil
+    IS 'Présence ou non d''une ventilation secondaire';	
 COMMENT ON COLUMN m_spanc.an_spanc_controle.contr_concl
     IS 'Conclusion du contrôle';
+COMMENT ON COLUMN m_spanc.an_spanc_controle.dem_concl
+    IS 'Conclusion de l''analyse du dossier de demande de travaux neuf ou réhabilitation';	
 COMMENT ON COLUMN m_spanc.an_spanc_controle.contr_confor
     IS 'Conformité du contrôle';
 COMMENT ON COLUMN m_spanc.an_spanc_controle.contr_nreal
