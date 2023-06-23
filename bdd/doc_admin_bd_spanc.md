@@ -844,6 +844,7 @@ Particularité(s) à noter :
 
   *  an_v_spanc_periodicite: : Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active
   * xapps_geo_an_spanc_contr_export : Vue applicative générant les exports des contrôles
+  * xapps_an_v_spanc_dernier_etat_equi : Vue applicative formattant l'affichage des derniers contrôles à l'installation (soit le diag initial ou le demande de travaux et le dernier contrôle
   * xapps_geo_an_spanc_install_export : Vue applicative générant les exports des installations
   * xapps_geo_v_spanc_rpqs_tab1 : Vue applicative ressortant les indicateurs RPQS pour le tableau de bord n°1 du SPANC
   * xapps_geo_v_spanc_tab2 : Vue applicative ressortant les indicateurs des types de contrôles par année sur l'EPCI (à transformer par commune)
