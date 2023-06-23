@@ -9,4 +9,5 @@
 /*
 #################################################################### SUIVI CODE SQL ####################################################################
 
+-- 2023/06/23 : GB / Ajustement du code SQL suite retour de la période test
 -- 2023/05/22 : GB / Initialisation du code SQL pour la création de structure de la base de données
