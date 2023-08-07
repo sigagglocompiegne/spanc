@@ -358,6 +358,7 @@ COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc
 
 
 
+
 -- ########################################################### xapps_geo_v_spanc_tri_contr ##################################################################
 
 -- m_spanc.xapps_geo_v_spanc_tri_contr
@@ -383,6 +384,7 @@ WHERE
 
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tri_contr 
 	IS 'Vue applicative pour palier au bug de GEO2.2 pour l''affichage des contrôles triés par date dans la fiche de l''installation';
+
 
 
 
@@ -476,6 +478,9 @@ COMMENT ON VIEW m_spanc.xapps_geo_an_spanc_install_export
 	IS 'Vue applicative générant les exports des installations';
 
 
+
+
+
 -- ########################################################### xapps_geo_an_spanc_contr_export ##################################################################
 
 -- m_spanc.xapps_geo_an_spanc_contr_export
@@ -536,7 +541,6 @@ order by split_part(c.idcontr,'_',2)::integer
 
 COMMENT ON VIEW m_spanc.xapps_geo_an_spanc_contr_export 
 	IS 'Vue applicative générant les exports des contrôles';
-
 
 
 -- ########################################################### xapps_geo_v_spanc_rpqs_tab1 ##################################################################
@@ -669,68 +673,152 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_rpqs_tab1
 
 -- ########################################################### xapps_geo_v_spanc_tab2 ##################################################################
 
--- m_spanc.xapps_geo_v_spanc_tab2
-
+-- m_spanc.xapps_geo_v_spanc_tab2 source
 drop view if exists m_spanc.xapps_geo_v_spanc_tab2;
 CREATE OR REPLACE VIEW m_spanc.xapps_geo_v_spanc_tab2
 AS 
 
+with req_stat_territorial AS
+(
+(
 WITH req_d AS (
          WITH req_a AS (
-                 SELECT DISTINCT g.code || '_' || to_char(c.date_vis, 'YYYY'::text) || c.epci AS cle,
+                 SELECT DISTINCT ((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || a.insee AS cle,
                     to_char(c.date_vis, 'YYYY'::text) AS annee,
                     g.code,
                     g.valeur,
+                    a.insee,
+                    a.commune,
                     c.epci
                    FROM m_spanc.an_spanc_controle c,
-                        m_spanc.lt_spanc_natcontr g
-                   where c.date_vis is not null
-                  ORDER BY g.code || '_' || to_char(c.date_vis, 'YYYY'::text) || c.epci
+                    m_spanc.lt_spanc_natcontr g,
+                    m_spanc.an_spanc_installation i,
+                    x_apps.xapps_geo_vmr_adresse a
+                  WHERE c.date_vis IS NOT null and c.idinstal = i.idinstal and i.idadresse = a.id_adresse 
+                  ORDER BY (((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || a.insee)
                 ), req_compte AS (
-                 SELECT DISTINCT g.code || '_' || to_char(c.date_vis, 'YYYY'::text) || c.epci AS cle,
-                    count(*) AS nb, 
-                    c.epci
+                 SELECT DISTINCT ((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || a.insee AS cle,
+                    count(*) AS nb,
+                    a.insee
                    FROM m_spanc.an_spanc_controle c
-                     left JOIN m_spanc.lt_spanc_natcontr g ON c.contr_nat = g.code
-                   where c.date_vis is not null
-                   group by g.code || '_' || to_char(c.date_vis, 'YYYY'::text) || c.epci, c.epci
-                   ORDER by g.code || '_' || to_char(c.date_vis, 'YYYY'::text) || c.epci
-                ), req_compte_tot as (
-                 SELECT DISTINCT to_char(c.date_vis, 'YYYY'::text) || c.epci AS cle,
- 					c.epci,
+                     LEFT JOIN m_spanc.lt_spanc_natcontr g ON c.contr_nat::text = g.code::text
+                     join m_spanc.an_spanc_installation i on i.idinstal = c.idinstal 
+                     join x_apps.xapps_geo_vmr_adresse a on i.idadresse = a.id_adresse 
+                  WHERE c.date_vis IS NOT NULL
+                  GROUP BY (((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || a.insee), a.insee
+                  ORDER BY (((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || a.insee)
+                ), req_compte_tot AS (
+                 SELECT DISTINCT to_char(c.date_vis, 'YYYY'::text) || a.insee AS cle,
+                    a.insee,
                     count(*) AS nb_tot
-                   FROM m_spanc.an_spanc_controle c
-                   where c.date_vis is not NULL 
-                   group by to_char(c.date_vis, 'YYYY'::text),c.epci
-                   ORDER by c.epci
+                   FROM m_spanc.an_spanc_controle c,
+                    m_spanc.an_spanc_installation i,
+                    x_apps.xapps_geo_vmr_adresse a
+                  WHERE c.date_vis IS NOT null and c.idinstal = i.idinstal and i.idadresse = a.id_adresse 
+                  GROUP BY (to_char(c.date_vis, 'YYYY'::text)), a.insee
+                  ORDER BY a.insee
                 )
-         SELECT DISTINCT row_number() OVER () AS id,req_a.code,
-           req_a.epci,
-            (((('<tr>'::text || '<td>'::text) || req_a.valeur::text) || '</td>'::text) || string_agg(('<td align=center>'::text ||
+         SELECT DISTINCT row_number() OVER () AS id,
+            req_a.code,
+            req_a.epci,
+            req_a.insee,
+            req_a.commune,
+            (((('<tr>'::text || '<td>'::text) || req_a.valeur) || '</td>'::text) || string_agg(('<td align=center>'::text ||
                 CASE
                     WHEN req_compte.nb IS NOT NULL THEN req_compte.nb
                     ELSE 0::bigint
                 END) || '</td>'::text, ''::text ORDER BY req_a.annee)) || '</tr>'::text AS tableau,
             string_agg(('<td>'::text || req_a.annee) || '</td>'::text, ''::text ORDER BY req_a.annee) AS annee,
-            string_agg(('<td align=center>'::text || req_compte_tot.nb_tot) || '</td>'::text, ''::text ORDER BY left(req_compte_tot.cle,4)) AS nb_tot
+            string_agg(('<td align=center>'::text || req_compte_tot.nb_tot) || '</td>'::text, ''::text ORDER BY ("left"(req_compte_tot.cle, 4))) AS nb_tot
            FROM req_a
              LEFT JOIN req_compte ON req_compte.cle = req_a.cle
-             LEFT JOIN req_compte_tot ON req_compte_tot.cle = split_part(req_a.cle,'_',2)
-             GROUP BY req_a.valeur, req_a.code, req_a.epci
-                 order by req_a.code
+             LEFT JOIN req_compte_tot ON req_compte_tot.cle = split_part(req_a.cle, '_'::text, 2)
+          GROUP BY req_a.valeur, req_a.code, req_a.epci,req_a.insee, req_a.commune
+          ORDER BY req_a.code
         )
- SELECT row_number() OVER () AS id,
-    epci,
-    ((('<table border=1 align=center><tr><td>&nbsp;</td>'::text || req_d.annee) || '</tr>'::text) || string_agg(req_d.tableau, ''::text)) || '<tr><td align=right>Total</td>' || req_d.nb_tot || '</tr></table>'::text AS tableau1
+ SELECT 
+    req_d.commune as territoire,
+    req_d.epci,
+    ((((('<table border=1 align=center><tr><td>&nbsp;</td>'::text || req_d.annee) || '</tr>'::text) || string_agg(req_d.tableau, ''::text)) || '<tr><td align=right>Total</td>'::text) || req_d.nb_tot) || '</tr></table>'::text AS tableau1
    FROM req_d
-  GROUP BY req_d.annee, req_d.nb_tot, req_d.epci;
+  GROUP BY req_d.annee, req_d.nb_tot, req_d.epci, req_d.commune
+  )
+ 
+  union all
+  (
+  WITH req_d AS (
+         WITH req_a AS (
+                 SELECT DISTINCT ((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || c.epci AS cle,
+                    to_char(c.date_vis, 'YYYY'::text) AS annee,
+                    g.code,
+                    g.valeur,
+                    c.epci,
+                    'Total EPCI' as territoire
+                   FROM m_spanc.an_spanc_controle c,
+                    m_spanc.lt_spanc_natcontr g
+                  WHERE c.date_vis IS NOT NULL
+                  ORDER BY (((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || c.epci)
+                ), req_compte AS (
+                 SELECT DISTINCT ((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || c.epci AS cle,
+                    count(*) AS nb,
+                    c.epci
+                   FROM m_spanc.an_spanc_controle c
+                     LEFT JOIN m_spanc.lt_spanc_natcontr g ON c.contr_nat::text = g.code::text
+                  WHERE c.date_vis IS NOT NULL
+                  GROUP BY (((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || c.epci), c.epci
+                  ORDER BY (((g.code::text || '_'::text) || to_char(c.date_vis, 'YYYY'::text)) || c.epci)
+                ), req_compte_tot AS (
+                 SELECT DISTINCT to_char(c.date_vis, 'YYYY'::text) || c.epci AS cle,
+                    c.epci,
+                    count(*) AS nb_tot
+                   FROM m_spanc.an_spanc_controle c
+                  WHERE c.date_vis IS NOT NULL
+                  GROUP BY (to_char(c.date_vis, 'YYYY'::text)), c.epci
+                  ORDER BY c.epci
+                )
+         SELECT DISTINCT 
+            req_a.code,
+            req_a.epci,
+            req_a.territoire,
+            (((('<tr>'::text || '<td>'::text) || req_a.valeur) || '</td>'::text) || string_agg(('<td align=center>'::text ||
+                CASE
+                    WHEN req_compte.nb IS NOT NULL THEN req_compte.nb
+                    ELSE 0::bigint
+                END) || '</td>'::text, ''::text ORDER BY req_a.annee)) || '</tr>'::text AS tableau,
+            string_agg(('<td>'::text || req_a.annee) || '</td>'::text, ''::text ORDER BY req_a.annee) AS annee,
+            string_agg(('<td align=center>'::text || req_compte_tot.nb_tot) || '</td>'::text, ''::text ORDER BY ("left"(req_compte_tot.cle, 4))) AS nb_tot
+           FROM req_a
+             LEFT JOIN req_compte ON req_compte.cle = req_a.cle
+             LEFT JOIN req_compte_tot ON req_compte_tot.cle = split_part(req_a.cle, '_'::text, 2)
+          GROUP BY req_a.valeur, req_a.code, req_a.epci, req_a.territoire
+          ORDER BY req_a.code
+        )
+ SELECT --row_number() OVER () AS id,
+    req_d.territoire,
+    req_d.epci,
+    ((((('<table border=1 align=center><tr><td>&nbsp;</td>'::text || req_d.annee) || '</tr>'::text) || string_agg(req_d.tableau, ''::text)) || '<tr><td align=right>Total</td>'::text) || req_d.nb_tot) || '</tr></table>'::text AS tableau1
+   FROM req_d
+  GROUP BY req_d.annee, req_d.nb_tot, req_d.territoire,req_d.epci
+ )
+ )
+  select 
+ row_number() OVER () AS id,
+ t.territoire,
+ t.epci,
+ t.tableau1
+ from
+ 	req_stat_territorial t
+  ;
+  
+
+COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab2 IS 'Vue applicative ressortant les indicateurs des types de contrôles par année et par commune';
 
 
-COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab2 
-	IS 'Vue applicative ressortant les indicateurs des types de contrôles par année sur l''EPCI (à transformer par commune)';
 
+
+ 
+ 
 -- ########################################################### xapps_geo_v_spanc_tab3 ##################################################################
-
 
 -- m_spanc.xapps_geo_v_spanc_tab3
 
@@ -754,6 +842,7 @@ group by c.epci,to_char(c.date_vis,'yyyy');
 
 COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab3 
 	IS 'Vue applicative ressortant le nombre total de contrôles par année et par epci';
+
 
 
 -- ########################################################### xapps_geo_v_spanc_tab4 ##################################################################
@@ -903,8 +992,8 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab5
 	IS 'Vue applicative ressortant les chiffres clés du SPANC';
 
 
--- ########################################################### an_v_spanc_periodicite ##################################################################
 
+-- ########################################################### an_v_spanc_periodicite ##################################################################
 
 drop view if exists m_spanc.an_v_spanc_periodicite;
 create or replace view m_spanc.an_v_spanc_periodicite as 
@@ -930,7 +1019,7 @@ select
 	        else null
         end as date_prochain_controle,
         */
-        replace(replace(replace(replace(
+         regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(
         age(case 
 	        -- cas d'un contrôle avec absence d'installation
         	when ad.contr_concl = '10' and ad.contr_nat in ('20','30','40','50','60') then (case when ad.date_act is not null then ad.date_act::timestamp else ad.date_trap::timestamp END + (ad.contr_abs::text || ' month')::interval)::date
@@ -949,7 +1038,7 @@ select
 	        -- cas d'un contrôle lié à une demande
 	        when ad.contr_nat in ('11','12') then (ad.date_trap::timestamp + (ad.contr_trav::text || ' year')::interval)::date
         	else null
-        end, now()::date)::text,'years','ans'),'mons','mois'),'days','jour(s)'),'00:00:00','0 jour')
+        end, now()::date)::text ,'years','ans'),'year','an'),'mons','mois'),'mon','mois'),'days','jour(s)'),'day','jour'),'00:00:00','0 jour')
         
         as prochain_controle_dans,
         
@@ -1040,6 +1129,8 @@ select
        ;
 
 COMMENT ON VIEW m_spanc.an_v_spanc_periodicite IS 'Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active';
+
+
 
 -- ########################################################### xapps_an_v_spanc_dernier_etat_equi ##################################################################
 
@@ -1161,6 +1252,8 @@ left join m_spanc.lt_spanc_equinstall r on r.code = c.equ_rejet
 group by i.idinstal, c.idinstal;
 
 COMMENT ON VIEW m_spanc.xapps_an_v_spanc_dernier_etat_equi IS 'Vue applicative formattant l''affichage des derniers contrôles à l''installation (soit le diag initial ou le demande de travaux et le dernier contrôle';
-                     
+
+
+
                    
 
