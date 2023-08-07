@@ -847,7 +847,7 @@ Particularité(s) à noter :
   * xapps_an_v_spanc_dernier_etat_equi : Vue applicative formattant l'affichage des derniers contrôles à l'installation (soit le diag initial ou le demande de travaux et le dernier contrôle
   * xapps_geo_an_spanc_install_export : Vue applicative générant les exports des installations
   * xapps_geo_v_spanc_rpqs_tab1 : Vue applicative ressortant les indicateurs RPQS pour le tableau de bord n°1 du SPANC
-  * xapps_geo_v_spanc_tab2 : Vue applicative ressortant les indicateurs des types de contrôles par année sur l'EPCI (à transformer par commune)
+  * xapps_geo_v_spanc_tab2 : Vue applicative ressortant les indicateurs des types de contrôles par année par commune et  pour l'EPCI
   * xapps_geo_v_spanc_tab3 : Vue applicative ressortant le nombre total de contrôles par année et par epci
   * xapps_geo_v_spanc_tab4 : Vue applicative ressortant le montant de la redevance et des pénalités
   * xapps_geo_v_spanc_tab5 : Vue applicative ressortant les chiffres clés du SPANC
