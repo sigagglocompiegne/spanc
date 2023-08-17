@@ -121,6 +121,7 @@ Particularité(s) à noter :
 |mod_gest|Mode de gestion du contrôle|character varying(2)| |
 |idpresta|Identifiant du prestataire ayant réalisé le contrôle|integer| |
 |iddsp|Identifiant de la DSP ayant réalisé le contrôle|integer| |
+|date_env|Date d'envoi de la demande|timestamp without time zone| |
 |contr_nat|Origine de déclenchement du contrôle|character varying(2)|'00'::character varying|
 |equ_pretrait|Equipement de pré-traitement|text|'00'::character varying|
 |equ_pretrait_a|Autre équipement de pré-traitement|text| |
@@ -130,7 +131,8 @@ Particularité(s) à noter :
 |equ_rejet_a|Autre équipement de rejet|text| |
 |equ_ventil|Présence ou non d'une ventilation secondaire|character varying(1)| |
 |contr_concl|Conclusion du contrôle|character varying(2)|'00'::character varying|
-|dem_concl|Conclusion de l'analyse du dossier de demande de travaux neuf ou réhabilitation|character varying(2)|'00'::character varying|
+|contr_concl_a|Conclusion des anciens contrôles (P1,P2 P3)|character varying(2)|'00'::character varying|
+|dem_concl|Conclusion de l'analyse du dossier de demande de travaux neuf ou réhabilitation|character varying(2)||
 |contr_confor|Conformité du contrôle|character varying(2)|'00'::character varying|
 |contr_nreal|Motif de la non réalisation du contrôle|character varying(2)|'00'::character varying|
 |date_dem|Date de la demande du contrôle|timestamp without time zone| |
@@ -161,16 +163,16 @@ Particularité(s) à noter :
 * Une clé étrangère existe sur la table de valeur `an_spanc_controle_contrinfo_fkey` (lien vers la liste de valeurs du dernier moyen de communication utilisée `lt_spanc_info`)
 * Une clé étrangère existe sur la table de valeur `an_spanc_controle_contrnat_fkey` (lien vers la liste de valeurs sur la nature du contrôle `lt_spanc_natcontr`)
 * Une clé étrangère existe sur la table de valeur `an_spanc_controle_contrnreal_fkey` (lien vers la liste de valeurs sur les types de refus d'un contrôle `lt_spanc_refus`)
+* Une clé étrangère existe sur la table de valeur `an_spanc_controle_demc_concl_fkey` (lien vers la liste de valeurs sur les conclusions des demandes de travaux `lt_spanc_contdt`)
 * Une clé étrangère existe sur la table de valeur `an_spanc_controle_modgest_fkey` (lien vers la liste de valeurs sur le mode de gestion du contrôle `lt_spanc_modgest`)
+  
 
-* 9 triggers :
+* 7 triggers :
   * `t_t0_an_spanc_controle_idcontr` : trigger permettant de formater l'identifiant du contrôle (EPCI + num)
   * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
   * `t_t1_an_spanc_controle_date_sai` : trigger permettant d'insérer la date de saisie
   * `t_t2_an_spanc_controle_date_maj` : trigger permettant d'insérer la date de mise à jour
   * `t_t4_an_spanc_controle_conform` : trigger permettant de gérer les contrôles de saisie, les insertions de certains attributs particulier et de déterminer automatiquement la conformité
-  * `t_t5_an_spanc_controle_equi_update` : trigger permettant de gérer la mise à jour des équipements au niveau de l'installation à la mise à jour
-  * `t_t6_an_spanc_controle_equi_insert` : trigger permettant de gérer la mise à jour des équipements au niveau de l'installation à l'insertion
   * `t_t8_refresh_carto` : trigger permettant de rafraichir la vue matérialisée `m_spanc.xapps_geo_vmr_spanc_anc`
   * `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
  
@@ -208,6 +210,8 @@ Particularité(s) à noter :
 |contr_trav|Nombre d'années de délais pour la réalisation des travaux|smallint| |
 |contr_abs|Nombre de mois pour la vérification si absence d'installation|smallint| |
 |rel_perio|Délais de relance lié à un contrôle en mois si la date choisie pour l'automatisme n'est pas remplie|smallint| |
+|rel_vente_nc|Délais de relance lié à un contrôle de vente avec une non conformité (grave ou pas)|smallint| |
+|rel_vente_ai|Délais de relance lié à un contrôle de vente avec une absence d'installation|smallint| |
 |date_sai|Date de saisie des informations d'installation|timestamp without time zone| |
 |date_maj|Date de mise à jour des informations d'installation|timestamp without time zone| |
 |op_sai|Opérateur ayant saisi l'information d'installation|character varying(20)| |
@@ -221,7 +225,7 @@ Particularité(s) à noter :
   * `t_t1_100` : trigger permettant d'insérer toutes les modifications dans la table des logs
   * `t_t1_an_spanc_conf_date_sai` : trigger permettant d'insérer la date de saisie
   * `t_t2_an_spanc_conf_date_maj` : trigger permettant d'insérer la date de mise à jour
-  * `t_t3_an_spanc_conrole_conf` : trigger permettant de gérer les contrôles de saisie 
+  * `t_t3_an_spanc_controle_conf` : trigger permettant de gérer les contrôles de saisie 
   * `t_t9_autorite_competente` : trigger permettant de récupérer l'EPCI d'appartenance de l'utilisateur pour insertion dans les données afin de gérer les droits et l'étanchéïté des données 
  
 ---
@@ -247,6 +251,7 @@ Particularité(s) à noter :
 |factu_ad|Adresse de facturation|text| |
 |date_sai|Date de saisie des informations d'installation|timestamp without time zone| |
 |date_maj|Date de mise à jour des informations d'installation|timestamp without time zone| |
+|observ|Observations diverses|text| |
 |op_sai|Opérateur ayant saisi l'information d'installation|character varying(20)| |
 |op_maj|Opérateur ayant modifier les informations d'installation|character varying(20)| |
 |epci|Acronyme de l'EPCI d'assise de l'installation|text| |
@@ -294,17 +299,23 @@ Particularité(s) à noter :
    
 |Nom attribut | Définition | Type | Valeurs par défaut |
 |:---|:---|:---|:---|
-|gid|Compteur (identifiant interne)|bigint|nextval('an_spanc_controle_media_seq'::regclass)|
-|id|Identifiant interne non signifiant de l'objet saisi|text| |
-|media|Champ Média de GEO|text| |
-|miniature|Champ miniature de GEO|bytea| |
-|n_fichier|Nom du fichier|text| |
-|t_fichier|Type de média dans GEO|text| |
-|date_sai|Date de la saisie du document|timestamp without time zone| |
-|op_sai|Opérateur de saisie (par défaut login de connexion à GEO)|character varying(20)| |
-|date_doc|Date du document|timestamp without time zone| |
-|t_doc|Type de documents|character varying(2)| |
-|observ|Commentaires divers|character varying(5000)| |
+|iddsp|Identifiant interne non signifiant pour chaque enregistrement|bigint|nextval('m_spanc.an_spanc_dsp_seq'::regclass)|
+|lib_dsp|Libellé de la société exerçant la DSP|text| |
+|date_deb|Date de début de la DSP|timestamp without time zone| |
+|date_fin|Date de fin de la DSP|timestamp without time zone| |
+|adresse|Adresse de la société excercant la DSP|text| |
+|tel|Téléphone de la société excercant la DSP|character varying(10)| |
+|telp|Téléphone portable de la société excercant la DSP|character varying(10)| |
+|email|Email de la société excercant la DSP|text| |
+|siret|Numéro SIRET du prestataire|character varying(14)| |
+|nom_assur|Libellé de l'assureur de la société excercant la DSP|text| |
+|num_assur|N° de police d'assurance de la société excercant la DSP|text| |
+|date_assur|Date de fin de validité de la société excercant la DSP|timestamp without time zone| |
+|date_sai|Date de saisie des informations d'installation|timestamp without time zone| |
+|date_maj|Date de mise à jour des informations d'installation|timestamp without time zone| |
+|op_sai|Opérateur ayant saisi l'information d'installation|character varying(20)| |
+|op_maj|Opérateur ayant modifier les informations d'installation|character varying(20)| |
+|epci|Acronyme de l'EPCI d'assise de l'installation|text| |
 
 Particularité(s) à noter :
 * Une clé primaire existe sur le champ `iddsp` l'attribution automatique de la référence unique s'effectue via une séquence. 
@@ -481,11 +492,12 @@ Valeurs possibles :
 
 |Code|Valeur|
 |:---|:---|
+|00|Non renseigné|
 |10|Avis favorable|
 |20|Avis défavorable|
 |30|Incomplet|
 |ZZ|Non concerné|
-|00|Non renseigné|
+
 
 ---
 
@@ -594,19 +606,19 @@ Valeurs possibles :
 |21|Fosse septique avec bac à graisse|
 |22|Fosse septique sans bac à graisse|
 |23|Fosse toutes eaux|
+|31|Tranchée d'épandage|
 |32|Filtre à sable drainé|
 |33|Filtre à sable non drainé|
 |34|Micro-station|
 |35|Filière compacte agréée|
 |36|Tertre|
 |37|Filtre à cheminement lent|
+|38|Filtre planté|
 |43|Puisard|
 |44|Puits d'infiltration|
 |45|Cours d'eau|
 |46|Réseau pluvial|
 |47|Ecoulement à la parcelle|
-|31|Tranchée d'épandage|
-|38|Filtre planté|
 |48|Fossé|
 |49|Tranchée d'infiltration|
 |99|Autre|
@@ -799,7 +811,7 @@ Valeurs possibles :
 |10|Maison individuelle|
 |20|Collectif|
 |31|Local commercial|
-|32|Autres locaux (hors habitation et hors CCPE|
+|32|Autres locaux (hors habitation et hors CCPE)|
 |40|Habitation temporaire (mobil-home, caravanes, …)|
 |50|Groupement d'habitations|
 
@@ -842,9 +854,8 @@ Particularité(s) à noter :
 
 ### classes d'objets applicatives métiers (vue) :
 
-  *  an_v_spanc_periodicite: : Vue applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active
+  * xapps_an_v_spanc_dernier_etat_equi : Vue applicative formattant l'affichage des derniers contrôles à l'installation (soit le diag initial ou la demande de travaux et le dernier contrôle)
   * xapps_geo_an_spanc_contr_export : Vue applicative générant les exports des contrôles
-  * xapps_an_v_spanc_dernier_etat_equi : Vue applicative formattant l'affichage des derniers contrôles à l'installation (soit le diag initial ou le demande de travaux et le dernier contrôle
   * xapps_geo_an_spanc_install_export : Vue applicative générant les exports des installations
   * xapps_geo_v_spanc_rpqs_tab1 : Vue applicative ressortant les indicateurs RPQS pour le tableau de bord n°1 du SPANC
   * xapps_geo_v_spanc_tab2 : Vue applicative ressortant les indicateurs des types de contrôles par année par commune et  pour l'EPCI
@@ -852,7 +863,11 @@ Particularité(s) à noter :
   * xapps_geo_v_spanc_tab4 : Vue applicative ressortant le montant de la redevance et des pénalités
   * xapps_geo_v_spanc_tab5 : Vue applicative ressortant les chiffres clés du SPANC
   * xapps_geo_v_spanc_tri_contr : Vue applicative pour palier au bug de GEO2.2 pour l'affichage des contrôles triés par date dans la fiche de l'installation
-  * xapps_geo_vmr_spanc_anc : Vue matérialisée applicative générant la récupération des adresses et les informations liées aux installations pour l'affichage cartographique et le fonctionnel au clic dans l'application
+  * xapps_an_vmr_spanc_conception : Vue matérialisée applicative gérant la recherche des installations en conception rafraichie à chaque insertion ou modification d'un contrôle (par défaut rafraichie toutes les nuits)
+  * xapps_an_vmr_spanc_conformite : Vue matérialisée applicative gérant la recherche des installations selon leur conformité rafraichie à chaque insertion ou modification d'un contrôle (par défaut rafraichie toutes les nuits)
+  * xapps_an_vmr_spanc_periodicite : Vue matérialisée applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active (rafraichie après chaque insertion ou mise à jour d'un contrôle)
+  * xapps_geo_vmr_spanc_anc : Vue matérialiséVue matérialisée applicative gérant la recherche des installations selon leur conformité rafraichie à chaque insertion ou modification d'un contrôlee applicative générant la récupération des adresses et les informations liées aux installations pour l'affichage cartographique et le fonctionnel au clic dans l'application (par défaut rafraichie toutes les nuits)
+  * xapps_geo_vmr_spanc_anc : Vue matérialisée rafraichie applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l'état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO
  
 ### classes d'objets applicatives grands publics sont classés dans le schéma x_apps_public :
 
@@ -869,6 +884,8 @@ Sans objet
 ## Traitement automatisé mis en place (Workflow de l'ETL FME)
 
 Sans objet
+
+Les seules traitements mis en oeuvre l'ont été pour intégrer des jeux de données anciens, donc à usage unique.
 
 ## Export Open Data
 
