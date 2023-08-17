@@ -1341,6 +1341,7 @@ SELECT ad.idinstal,
         (select EXTRACT(YEAR FROM age) AS annee_ecart
     FROM age(now(), ad.date_trap) AS t(age)),
     ad.contr_concl,
+    ad.contr_concl_a,
     ad.lib_contr_concl,
     ad.contr_nat,
     ad.lib_contr_nat,
@@ -1358,6 +1359,7 @@ SELECT ad.idinstal,
             a.idcontr,
             a.contr_confor,
             a.contr_concl,
+            a.contr_concl_a,
             ct.valeur AS lib_contr_concl,
             a.contr_nat,
             nt.valeur AS lib_contr_nat,
@@ -1443,8 +1445,6 @@ SELECT ad.idinstal,
         
 
 COMMENT ON MATERIALIZED VIEW m_spanc.xapps_an_vmr_spanc_periodicite IS 'Vue matérialisée applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active (rafraichie après chaque insertion ou mise à jour d''un contrôle)';
-
-
 
 
 -- ########################################################### xapps_an_vmr_spanc_conception ##################################################################
