@@ -26,7 +26,7 @@ Pour rappel des grands principes :
 
 ## Schéma fonctionnel
 
-(à réaliser)
+(réaliser le schéma)
 
 ## Modèle relationel simplifié
 
