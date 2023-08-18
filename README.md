@@ -4,7 +4,7 @@
 
 [ ] à rédiger [x] en cours de rédaction [ ] finaliser
 
-Ensemble des éléments constituant la mise en oeuvre de la base de données pour le suivi administratif des Services Publics d'Assainissement Non Collectif (SPANC) :
+Ensemble des éléments constituant la mise en oeuvre de la base de données pour le suivi administratif des Services Publics d'Assainissement Non Collectif (SPANC) sur les 4 EPCI du Grand Compiégnois :
 
 - Script d'initialisation de la base de données
   * [Suivi des modifications](bdd/spanc_00_trace.sql)
