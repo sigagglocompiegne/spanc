@@ -2,7 +2,7 @@
 
 # Prescriptions spécifiques (locales) pour le suivi et la gestion des contrôles d'Assainissement Non Collectif (ANC)
 
-[ ] à rédiger [x] en cours de rédaction [ ] finaliser
+[ ] à rédiger [x] en cours de rédaction [x] finaliser
 
 Ensemble des éléments constituant la mise en oeuvre de la base de données pour le suivi administratif des Services Publics d'Assainissement Non Collectif (SPANC) sur les 4 EPCI du Grand Compiégnois :
 
