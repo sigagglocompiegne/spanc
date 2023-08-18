@@ -26,7 +26,7 @@ Pour rappel des grands principes :
 
 ## Schéma fonctionnel
 
-![spanc_schema](bdd/spanc_schema_fonctionnel.png.png)
+![spanc_schema](bspanc_schema_fonctionnel.png)
 
 ## Modèle relationel simplifié
 
