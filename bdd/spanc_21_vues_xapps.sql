@@ -17,288 +17,236 @@
 -- m_spanc.xapps_geo_vmr_spanc_anc
 drop view if exists m_spanc.xapps_geo_vmr_spanc_anc;
 CREATE MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc
-AS
+TABLESPACE pg_default
+as
 
 WITH req_ad AS (
-         SELECT a.id_adresse,
-            a.commune,
-            a.libvoie_c,
-            a.numero,
-            a.repet,
-            (((((((a.numero::text ||
+         SELECT a_1.id_adresse,
+            a_1.commune,
+            a_1.libvoie_c,
+            a_1.numero,
+            a_1.repet,
+            ((((((((a_1.numero::text ||
                 CASE
-                    WHEN a.repet IS NOT NULL OR a.repet::text <> ''::text THEN a.repet
+                    WHEN a_1.repet IS NOT NULL OR a_1.repet::text <> ''::text THEN a_1.repet
                     ELSE ''::character varying
-                END::text) || ' '::text) || a.libvoie_c::text) ||
+                END::text) || ' '::text) || a_1.libvoie_c::text) ||
                 CASE
-                    WHEN a.ld_compl  IS NULL OR a.ld_compl::text = ''::text THEN ''::text
-                    ELSE chr(10) || a.ld_compl::text
-                END ||
+                    WHEN a_1.ld_compl IS NULL OR a_1.ld_compl::text = ''::text THEN ''::text
+                    ELSE chr(10) || a_1.ld_compl::text
+                END) ||
                 CASE
-                    WHEN a.complement IS NULL OR a.complement::text = ''::text THEN ''::text
-                    ELSE chr(10) || a.complement::text
-                END) || chr(10)) || a.codepostal::text) || ' '::text) || a.commune::text AS adresse,
-            a.mot_dir,
-            a.libvoie_a,
+                    WHEN a_1.complement IS NULL OR a_1.complement::text = ''::text THEN ''::text
+                    ELSE chr(10) || a_1.complement::text
+                END) || chr(10)) || a_1.codepostal::text) || ' '::text) || a_1.commune::text AS adresse,
+            a_1.mot_dir,
+            a_1.libvoie_a,
             e.iepci,
-            a.geom
-           FROM x_apps.xapps_geo_vmr_adresse a, r_administratif.an_geo g, r_osm.geo_osm_epci e 
-           where a.insee = g.insee and e.cepci = g.epci 
-        ),
-        req_nb_anc as
-        (
-        with req_sous_ad as (
-        --1er passe sur adresse principale
-        select 
-        a.id_adresse,
-        count(*) as nb_inst
-        from
-        	m_spanc.an_spanc_installation i, x_apps.xapps_geo_vmr_adresse a
-        where i.idadresse = a.id_adresse AND i.inst_etat = '10' group by  a.id_adresse
-        union all 
-        --2ème passe 
-        select 
-        a.idadresse as id_adresse,
-        count(*) as nb_inst
-        from
-        	m_spanc.an_spanc_installation i, m_spanc.lk_spanc_installad a
-        where i.idinstal = a.idinstal AND i.inst_etat = '10' group by  a.idadresse
+            a_1.geom
+           FROM x_apps.xapps_geo_vmr_adresse a_1,
+            r_administratif.an_geo g,
+            r_osm.geo_osm_epci e
+          WHERE a_1.insee = g.insee::bpchar AND e.cepci::text = g.epci::text
+        ), req_nb_anc AS (
+         WITH req_sous_ad AS (
+                 SELECT a_1.id_adresse,
+                    count(*) AS nb_inst
+                   FROM m_spanc.an_spanc_installation i,
+                    x_apps.xapps_geo_vmr_adresse a_1
+                  WHERE i.idadresse = a_1.id_adresse AND i.inst_etat::text = '10'::text
+                  GROUP BY a_1.id_adresse
+                UNION ALL
+                 SELECT a_1.idadresse AS id_adresse,
+                    count(*) AS nb_inst
+                   FROM m_spanc.an_spanc_installation i,
+                    m_spanc.lk_spanc_installad a_1
+                  WHERE i.idinstal = a_1.idinstal AND i.inst_etat::text = '10'::text 
+                  GROUP BY a_1.idadresse
+                )
+         SELECT b_1.id_adresse,
+            sum(b_1.nb_inst) AS nb_inst
+           FROM req_sous_ad b_1
+          GROUP BY b_1.id_adresse
+        ), req_nb_contr AS (
+         WITH req_sous_cont AS (
+                 SELECT a_1.id_adresse,
+                    count(*) AS nb_contr
+                   FROM m_spanc.an_spanc_installation i,
+                    m_spanc.an_spanc_controle c_2,
+                    x_apps.xapps_geo_vmr_adresse a_1
+                  WHERE i.idadresse = a_1.id_adresse AND i.idinstal = c_2.idinstal AND i.inst_etat::text = '10'::text AND (c_2.contr_confor::text = ANY (ARRAY['10'::character varying, '20'::character varying, '30'::character varying]::text[])) AND (c_2.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[]))
+                  GROUP BY a_1.id_adresse
+                UNION ALL
+                 SELECT a_1.idadresse AS id_adresse,
+                    count(*) AS nb_contr
+                   FROM m_spanc.an_spanc_installation i,
+                    m_spanc.an_spanc_controle c_2,
+                    m_spanc.lk_spanc_installad a_1
+                  WHERE i.idinstal = a_1.idinstal AND i.idinstal = c_2.idinstal AND i.inst_etat::text = '10'::text AND (c_2.contr_confor::text = ANY (ARRAY['10'::character varying, '20'::character varying, '30'::character varying]::text[])) AND (c_2.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[]))
+                  GROUP BY a_1.idadresse
+                )
+         SELECT c_1.id_adresse,
+            sum(c_1.nb_contr) AS nb_contr
+           FROM req_sous_cont c_1
+          GROUP BY c_1.id_adresse
+        ), req_dcontrl AS (
+         WITH req_final AS (
+                 WITH req_max AS (
+                        ( SELECT ad.id_adresse,
+                            max(ad.date_vis) AS date_vis,
+                            string_agg(ad.contr_confor::text, ','::text) AS contr_confor,
+                            string_agg(ad.contr_nat::text, ','::text) AS contr_nat,
+                            string_agg(
+                                CASE
+                                    WHEN ad.contr_nat::text = '99'::text THEN '9'::text
+                                    WHEN ad.contr_confor::text <> '00'::text AND ad.contr_confor::text <> 'ZZ'::text THEN "left"(ad.contr_confor::text, 1)
+                                    ELSE ''::text
+                                END, ','::text) AS tri_confor
+                           FROM ( SELECT DISTINCT b_1.id_adresse,
+                                    a_1.idinstal,
+CASE
+ WHEN a_1.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[]) THEN '50'::character varying
+ ELSE a_1.contr_confor
+END AS contr_confor,
+CASE
+ WHEN a_1.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN '99'::character varying
+ ELSE a_1.contr_nat
+END AS contr_nat,
+                                    a_1.date_vis
+                                   FROM m_spanc.an_spanc_controle a_1
+                                     JOIN ( SELECT a_2.id_adresse,
+    c_1.idinstal,
+    max(c_1.date_vis) AS date_vis
+   FROM m_spanc.an_spanc_controle c_1,
+    m_spanc.an_spanc_installation i,
+    x_apps.xapps_geo_vmr_adresse a_2
+  WHERE c_1.idinstal = i.idinstal AND i.idadresse = a_2.id_adresse AND i.inst_etat::text = '10'::text and c_1.contr_nat not in ('11','12')
+  GROUP BY c_1.idinstal, a_2.id_adresse) b_1 ON a_1.idinstal = b_1.idinstal AND a_1.date_vis = b_1.date_vis) ad
+                          GROUP BY ad.id_adresse
+                          ORDER BY (max(ad.date_vis)) DESC)
+                        UNION ALL
+                        ( SELECT ad.idadresse AS id_adresse,
+                            max(ad.date_vis) AS date_vis,
+                            string_agg(ad.contr_confor::text, ','::text) AS contr_confor,
+                            string_agg(ad.contr_nat::text, ','::text) AS contr_nat,
+                            string_agg(
+                                CASE
+                                    WHEN ad.contr_nat::text = '99'::text THEN '9'::text
+                                    WHEN ad.contr_confor::text <> '00'::text AND ad.contr_confor::text <> 'ZZ'::text THEN "left"(ad.contr_confor::text, 1)
+                                    ELSE ''::text
+                                END, ','::text) AS tri_confor
+                           FROM ( SELECT DISTINCT b_1.idadresse,
+                                    a_1.idinstal,
+CASE
+ WHEN a_1.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[]) THEN '50'::character varying
+ ELSE a_1.contr_confor
+END AS contr_confor,
+CASE
+ WHEN a_1.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN '99'::character varying
+ ELSE a_1.contr_nat
+END AS contr_nat,
+                                    a_1.date_vis
+                                   FROM m_spanc.an_spanc_controle a_1
+                                     JOIN ( SELECT a_2.idadresse,
+    c_1.idinstal,
+    max(c_1.date_vis) AS date_vis
+   FROM m_spanc.an_spanc_controle c_1,
+    m_spanc.an_spanc_installation i,
+    m_spanc.lk_spanc_installad a_2
+  WHERE c_1.idinstal = i.idinstal AND i.idinstal = a_2.idinstal AND i.inst_etat::text = '10'::text and c_1.contr_nat not in ('11','12')
+  GROUP BY c_1.idinstal, a_2.idadresse) b_1 ON a_1.idinstal = b_1.idinstal AND a_1.date_vis = b_1.date_vis) ad
+                          GROUP BY ad.idadresse
+                          ORDER BY (max(ad.date_vis)) DESC)
+                        )
+                 SELECT f_1.id_adresse,
+                    f_1.date_vis,
+                    f_1.contr_confor,
+                    f_1.contr_nat,
+                    f_1.tri_confor
+                   FROM req_max f_1
+                ), req_max AS (
+                 WITH req_max_t AS (
+                        ( SELECT ad.id_adresse,
+                            max(ad.date_vis) AS date_vis,
+                            string_agg(ad.contr_confor::text, ','::text) AS contr_confor,
+                            string_agg(ad.contr_nat::text, ','::text) AS contr_nat,
+                            string_agg(
+                                CASE
+                                    WHEN ad.contr_nat::text = '99'::text THEN '9'::text
+                                    WHEN ad.contr_confor::text <> '00'::text AND ad.contr_confor::text <> 'ZZ'::text THEN "left"(ad.contr_confor::text, 1)
+                                    ELSE ''::text
+                                END, ','::text) AS tri_confor
+                           FROM ( SELECT DISTINCT b_1.id_adresse,
+                                    a_1.idinstal,
+CASE
+ WHEN a_1.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[]) THEN '50'::character varying
+ ELSE a_1.contr_confor
+END AS contr_confor,
+CASE
+ WHEN a_1.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN '99'::character varying
+ ELSE a_1.contr_nat
+END AS contr_nat,
+                                    a_1.date_vis
+                                   FROM m_spanc.an_spanc_controle a_1
+                                     JOIN ( SELECT a_2.id_adresse,
+    c_1.idinstal,
+    max(c_1.date_vis) AS date_vis
+   FROM m_spanc.an_spanc_controle c_1,
+    m_spanc.an_spanc_installation i,
+    x_apps.xapps_geo_vmr_adresse a_2
+  WHERE c_1.idinstal = i.idinstal AND i.idadresse = a_2.id_adresse AND i.inst_etat::text = '10'::text and c_1.contr_nat not in ('11','12')
+  GROUP BY c_1.idinstal, a_2.id_adresse) b_1 ON a_1.idinstal = b_1.idinstal AND a_1.date_vis = b_1.date_vis) ad
+                          GROUP BY ad.id_adresse
+                          ORDER BY (max(ad.date_vis)) DESC)
+                        UNION ALL
+                        ( SELECT ad.idadresse AS id_adresse,
+                            max(ad.date_vis) AS date_vis,
+                            string_agg(ad.contr_confor::text, ','::text) AS contr_confor,
+                            string_agg(ad.contr_nat::text, ','::text) AS contr_nat,
+                            string_agg(
+                                CASE
+                                    WHEN ad.contr_nat::text = '99'::text THEN '9'::text
+                                    WHEN ad.contr_confor::text <> '00'::text AND ad.contr_confor::text <> 'ZZ'::text THEN "left"(ad.contr_confor::text, 1)
+                                    ELSE ''::text
+                                END, ','::text) AS tri_confor
+                           FROM ( SELECT DISTINCT b_1.idadresse,
+                                    a_1.idinstal,
+CASE
+ WHEN a_1.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[]) THEN '50'::character varying
+ ELSE a_1.contr_confor
+END AS contr_confor,
+CASE
+ WHEN a_1.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN '99'::character varying
+ ELSE a_1.contr_nat
+END AS contr_nat,
+                                    a_1.date_vis
+                                   FROM m_spanc.an_spanc_controle a_1
+                                     JOIN ( SELECT a_2.idadresse,
+    c_1.idinstal,
+    max(c_1.date_vis) AS date_vis
+   FROM m_spanc.an_spanc_controle c_1,
+    m_spanc.an_spanc_installation i,
+    m_spanc.lk_spanc_installad a_2
+  WHERE c_1.idinstal = i.idinstal AND i.idinstal = a_2.idinstal AND i.inst_etat::text = '10'::text and c_1.contr_nat not in ('11','12')
+  GROUP BY c_1.idinstal, a_2.idadresse) b_1 ON a_1.idinstal = b_1.idinstal AND a_1.date_vis = b_1.date_vis) ad
+                          GROUP BY ad.idadresse
+                          ORDER BY (max(ad.date_vis)) DESC)
+                        )
+                 SELECT m_1.id_adresse,
+                    max(m_1.tri_confor) AS tri_confor_m
+                   FROM req_max_t m_1
+                  GROUP BY m_1.id_adresse
+                )
+         SELECT f.id_adresse,
+            f.date_vis,
+            f.contr_confor,
+            f.contr_nat,
+            m.tri_confor_m
+           FROM req_final f
+             LEFT JOIN req_max m ON m.id_adresse = f.id_adresse
+          WHERE f.tri_confor = m.tri_confor_m
         )
-        select 
-        	b.id_adresse,
-        	sum(nb_inst) as nb_inst
-        from 
-       		 req_sous_ad b
-        group by b.id_adresse
-        
-        ),  
- 
-        req_nb_contr as
-        (
-        with req_sous_cont as 
-        (
-        --1er passage sur adresse principale
-        select 
-        a.id_adresse,
-        count(*) as nb_contr
-        from
-        	m_spanc.an_spanc_installation i, 
-        	m_spanc.an_spanc_controle c,
-        	x_apps.xapps_geo_vmr_adresse a
-        	
-        where i.idadresse = a.id_adresse and i.idinstal = c.idinstal and i.inst_etat = '10' AND c.contr_confor IN ('10','20','30') 
-        AND c.contr_nat in ('13','14','20','30','40','50','60') group by  a.id_adresse
-        union all 
-        --2ème passage sur adresse associée
-        select 
-        a.idadresse as id_adresse,
-        count(*) as nb_contr
-        from
-        	m_spanc.an_spanc_installation i, 
-        	m_spanc.an_spanc_controle c,
-        	m_spanc.lk_spanc_installad a
-        	
-        where i.idinstal = a.idinstal and i.idinstal = c.idinstal and i.inst_etat = '10' AND c.contr_confor IN ('10','20','30') 
-        AND c.contr_nat in ('13','14','20','30','40','50','60') group by  a.idadresse
-        )
-        select 
-        	c.id_adresse,
-        	sum(nb_contr) as nb_contr
-        from 
-        	req_sous_cont c
-        group by
-        	c.id_adresse
-        
-        ), 
-        req_dcontrl AS
-(
-
-with req_final as
-(
-with req_max as 
-(
-
-(
-     --1er passage sur adresse principale
-     select 
-        ad.id_adresse,
-        max(ad.date_vis) as date_vis,
-        string_agg(ad.contr_confor,',') as contr_confor,
-        string_agg(ad.contr_nat,',') as contr_nat,
-        string_agg(
-        case 
-	         when ad.contr_nat = '99' then '9'
-	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-         --    when ad.contr_confor = 'ZZ' then '4'
-             else '' END
-        
-        ,',') as tri_confor
-      FROM  
-      (       
-      SELECT DISTINCT 
-             b_1.id_adresse,
-             a.idinstal,
-              -- ici gestion des conformités si travaux ou non (pas en base, mais déduit de la conclusion du contrôle 31 ou 32 => avec travaux donc rouge à l'affichage)
-              -- la valeur 50 est écrite temporairement pour gérer le tri à la fin de la requête
-              case when a.contr_concl in ('31','32') then '50' else a.contr_confor end,
-              case when a.contr_nat in ('11','12') then '99' else a.contr_nat end,
-            a.date_vis
-           FROM m_spanc.an_spanc_controle a
-             JOIN ( SELECT a.id_adresse, c.idinstal,
-                    max(c.date_vis) AS date_vis
-                   FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i, x_apps.xapps_geo_vmr_adresse a
-                   where c.idinstal = i.idinstal and i.idadresse = a.id_adresse  AND i.inst_etat = '10'
-                  GROUP BY c.idinstal, a.id_adresse) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
-                  ) ad group by ad.id_adresse /*, ad.contr_confor*/ order by max(ad.date_vis) desc --limit 1
-                  )
-          union all 
-          --2ème passage sur adresse associée
-        (
-        select 
-        ad.idadresse as id_adresse,
-        max(ad.date_vis) as date_vis,
-        string_agg(ad.contr_confor,',') as contr_confor,
-        string_agg(ad.contr_nat,',') as contr_nat,
-        string_agg(
-        case 
-	         when ad.contr_nat = '99' then '9'
-	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-          --   when ad.contr_confor = 'ZZ' then '4'
-             else '' END
-        
-        ,',') as tri_confor
-      FROM  
-      (       
-      SELECT DISTINCT 
-             b_1.idadresse,
-             a.idinstal,
-              -- ici gestion des conformités si travaux ou non (pas en base, mais déduit de la conclusion du contrôle 31 ou 32 => avec travaux donc rouge à l'affichage)
-              -- la valeur 50 est écrite temporairement pour gérer le tri à la fin de la requête
-              case when a.contr_concl in ('31','32') then '50' else a.contr_confor end,
-              case when a.contr_nat in ('11','12') then '99' else a.contr_nat end,
-            a.date_vis
-           FROM m_spanc.an_spanc_controle a
-             JOIN ( SELECT a.idadresse, c.idinstal,
-                    max(c.date_vis) AS date_vis
-                   FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i, m_spanc.lk_spanc_installad a
-                   where c.idinstal = i.idinstal and i.idinstal = a.idinstal  AND i.inst_etat = '10'
-                  GROUP BY c.idinstal, a.idadresse) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
-                  ) ad group by ad.idadresse /*, ad.contr_confor*/ order by max(ad.date_vis) desc --limit 1
-                  )
-)
-select 
- 		f.id_adresse,
-        f.date_vis,
-        f.contr_confor,
-        f.contr_nat,
-        /*string_agg(
-        case 
-	         when f.contr_nat = '99' then '9'
-	         when f.contr_confor <> '00' and f.contr_confor <> 'ZZ' then left(f.contr_confor,1)
-             when f.contr_confor = 'ZZ' then '4'
-             else '' END
-        
-        ,',') as tri_confor*/
-        f.tri_confor 
-        
-from 
-req_max f
-), req_max as
-(
-with req_max_t as 
-(
-
-(
-     --2ème passage sur adresse principale
-     select 
-        ad.id_adresse,
-        max(ad.date_vis) as date_vis,
-        string_agg(ad.contr_confor,',') as contr_confor,
-        string_agg(ad.contr_nat,',') as contr_nat,
-        string_agg(
-        case 
-	         when ad.contr_nat = '99' then '9'
-	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-          --   when ad.contr_confor = 'ZZ' then '4'
-             else '' END
-        
-        ,',') as tri_confor
-      FROM  
-      (       
-      SELECT DISTINCT 
-             b_1.id_adresse,
-             a.idinstal,
-              -- ici gestion des conformités si travaux ou non (pas en base, mais déduit de la conclusion du contrôle 31 ou 32 => avec travaux donc rouge à l'affichage)
-              -- la valeur 50 est écrite temporairement pour gérer le tri à la fin de la requête
-              case when a.contr_concl in ('31','32') then '50' else a.contr_confor end,
-              case when a.contr_nat in ('11','12') then '99' else a.contr_nat end,
-            a.date_vis
-           FROM m_spanc.an_spanc_controle a
-             JOIN ( SELECT a.id_adresse, c.idinstal,
-                    max(c.date_vis) AS date_vis
-                   FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i, x_apps.xapps_geo_vmr_adresse a
-                   where c.idinstal = i.idinstal and i.idadresse = a.id_adresse  AND i.inst_etat = '10'
-                  GROUP BY c.idinstal, a.id_adresse) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
-                  ) ad group by ad.id_adresse /*, ad.contr_confor*/ order by max(ad.date_vis) desc --limit 1
-                  )
-          union all 
-          --2ème passage sur adresse associée
-        (
-        select 
-        ad.idadresse as id_adresse,
-        max(ad.date_vis) as date_vis,
-        string_agg(ad.contr_confor,',') as contr_confor,
-        string_agg(ad.contr_nat,',') as contr_nat,
-        string_agg(
-        case 
-	         when ad.contr_nat = '99' then '9'
-	         when ad.contr_confor <> '00' and ad.contr_confor <> 'ZZ' then left(ad.contr_confor,1)
-           --  when ad.contr_confor = 'ZZ' then '4'
-             else '' END
-        
-        ,',') as tri_confor
-      FROM  
-      (       
-      SELECT DISTINCT 
-             b_1.idadresse,
-             a.idinstal,
-              -- ici gestion des conformités si travaux ou non (pas en base, mais déduit de la conclusion du contrôle 31 ou 32 => avec travaux donc rouge à l'affichage)
-              -- la valeur 50 est écrite temporairement pour gérer le tri à la fin de la requête
-              case when a.contr_concl in ('31','32') then '50' else a.contr_confor end,
-              case when a.contr_nat in ('11','12') then '99' else a.contr_nat end,
-            a.date_vis
-           FROM m_spanc.an_spanc_controle a
-             JOIN ( SELECT a.idadresse, c.idinstal,
-                    max(c.date_vis) AS date_vis
-                   FROM m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i, m_spanc.lk_spanc_installad a
-                   where c.idinstal = i.idinstal and i.idinstal = a.idinstal  AND i.inst_etat = '10'
-                  GROUP BY c.idinstal, a.idadresse) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
-                  ) ad group by ad.idadresse /*, ad.contr_confor*/ order by max(ad.date_vis) desc --limit 1
-                  )
-)
-select 
- 		m.id_adresse,
-        max(m.tri_confor) as tri_confor_m
-        
-from 
-req_max_t m
-group by m.id_adresse
-)
-select 
-f.id_adresse,
-        f.date_vis,
-        f.contr_confor,
-        f.contr_nat,
-m.tri_confor_m
-from 
-req_final f
-left join req_max m on m.id_adresse = f.id_adresse where f.tri_confor = m.tri_confor_m
-
-)
-
-
-
- SELECT distinct row_number() OVER () AS gid,
+ SELECT DISTINCT row_number() OVER () AS gid,
     b.id_adresse,
     b.commune,
     b.libvoie_c,
@@ -308,55 +256,48 @@ left join req_max m on m.id_adresse = f.id_adresse where f.tri_confor = m.tri_co
     b.adresse,
     b.mot_dir,
     b.iepci,
-    case when a.nb_inst is null then 0 else a.nb_inst end as nb_inst,
-    case when c.nb_contr is null then 0 else c.nb_contr end as nb_contr,
-    -- gestion ici de l'affichage, si une installation prend l'état du dernier contrôle
-    case when a.nb_inst = 1 then 
-          			case when dc.contr_confor is not null and dc.contr_nat in ('11','12') then 'n.r'
-          			     when dc.contr_confor is not null and dc.contr_nat in ('13','14','20','30','40','50','60') then dc.contr_confor::character varying
-          			else 'n.r' END
-    -- gestion ici de l'affichage, si plusieurs installations prend l'état le plus mauvais des n installations
-          			when a.nb_inst > 1 then
-    	 case when dc.contr_confor is null then 'n.r' else 
-    	 -- gestion ici de la priorisation des contrôles, le plus mauvais (ici on retrouve la valeur 50 à 5 pour indiquer le code 21. Ce code est repris dans GEO
-    	 -- pour gérer l'affichage de la carte et dans la fiche à l'adresse (champ_calculé affiche_conformite)
-    	 	case 
-	    	 	 when dc.tri_confor_m like '%9%' then 'n.r'
-	    	 --	 when dc.tri_confor_m like '%4%' then 'ZZ'
-	    	 	 when dc.tri_confor_m like '%8%' then '80'
-    	 		 when dc.tri_confor_m like '%3%' then '30'
-    	 		 when dc.tri_confor_m like '%5%' then '21'
-    	 	     when dc.tri_confor_m like '%2%' then '20'
-    	 	     when dc.tri_confor_m like '%1%' then '10' 
-    	 	    
-    	 	     else 'n.r' 
-    	    end
-    	 --left(dc.contr_confor,2)::character varying end 
-     	 end
-     else	
-     'Aucune'
-    END	
-     	as confor,
-
- --   contr_nat,
+        CASE
+            WHEN a.nb_inst IS NULL THEN 0::numeric
+            ELSE a.nb_inst
+        END AS nb_inst,
+        CASE
+            WHEN c.nb_contr IS NULL THEN 0::numeric
+            ELSE c.nb_contr
+        END AS nb_contr,
+        CASE
+            WHEN a.nb_inst = 1::numeric THEN
+            CASE
+                WHEN dc.contr_confor IS NOT NULL AND (dc.contr_nat = ANY (ARRAY['11'::text, '12'::text])) THEN 'n.r'::character varying
+                WHEN dc.contr_confor IS NOT NULL AND (dc.contr_nat = ANY (ARRAY['13'::text, '14'::text, '20'::text, '30'::text, '40'::text, '50'::text, '60'::text])) THEN dc.contr_confor::character varying
+                ELSE 'n.r'::character varying
+            END
+            WHEN a.nb_inst > 1::numeric THEN
+            CASE
+                WHEN dc.contr_confor IS NULL THEN 'n.r'::text
+                ELSE
+                CASE
+                    WHEN dc.tri_confor_m ~~ '%9%'::text THEN 'n.r'::text
+                    WHEN dc.tri_confor_m ~~ '%8%'::text THEN '80'::text
+                    WHEN dc.tri_confor_m ~~ '%3%'::text THEN '30'::text
+                    WHEN dc.tri_confor_m ~~ '%5%'::text THEN '21'::text
+                    WHEN dc.tri_confor_m ~~ '%2%'::text THEN '20'::text
+                    WHEN dc.tri_confor_m ~~ '%1%'::text THEN '10'::text
+                    ELSE 'n.r'::text
+                END
+            END::character varying
+            ELSE 'Aucune'::character varying
+        END AS confor,
     b.geom
-   FROM req_ad b 
-  	left join req_nb_anc a on b.id_adresse=a.id_adresse
-  	LEFT JOIN req_nb_contr c ON a.id_adresse = c.id_adresse
-    LEFT JOIN req_dcontrl dc ON dc.id_adresse = b.id_adresse
-   --  where b.id_adresse = 30801 
-    
-    group by b.id_adresse, b.commune,
-    b.libvoie_c, b.libvoie_a, b.numero, b.repet, b.adresse, b.mot_dir, b.iepci,dc.contr_confor,dc.tri_confor_m,b.geom,c.nb_contr,dc.contr_nat,a.nb_inst
-   
-    WITH DATA;
-   
--- where a.nb_inst >= 1 and  b.id_adresse = 30380;
-   
-COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc 
-	IS 'Vue matérialisée rafraichie applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l''état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO';
+   FROM req_ad b
+     LEFT JOIN req_nb_anc a ON b.id_adresse = a.id_adresse
+     LEFT JOIN req_nb_contr c ON a.id_adresse = c.id_adresse
+     LEFT JOIN req_dcontrl dc ON dc.id_adresse = b.id_adresse
 
+  GROUP BY b.id_adresse, b.commune, b.libvoie_c, b.libvoie_a, b.numero, b.repet, b.adresse, b.mot_dir, b.iepci, dc.contr_confor, dc.tri_confor_m, b.geom, c.nb_contr, dc.contr_nat, a.nb_inst
 
+  WITH DATA;
+
+COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc IS 'Vue matérialisée rafraichie applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l''état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO';
 
 
 -- ########################################################### xapps_geo_v_spanc_tri_contr ##################################################################
