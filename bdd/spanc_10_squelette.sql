@@ -1018,6 +1018,10 @@ elseif 	TG_OP ='UPDATE' then
 
 end if;
 
+ refresh materialized view m_spanc.xapps_an_vmr_spanc_periodicite with data;
+ refresh materialized view m_spanc.xapps_an_vmr_spanc_conception with data;
+ refresh materialized view m_spanc.xapps_an_vmr_spanc_conformite with data;
+
 return new;
 
 END;
@@ -1937,6 +1941,7 @@ end if;
 
  refresh materialized view m_spanc.xapps_an_vmr_spanc_periodicite with data;
  refresh materialized view m_spanc.xapps_an_vmr_spanc_conception with data;
+ refresh materialized view m_spanc.xapps_an_vmr_spanc_conformite with data;
 
 END;
 
