@@ -904,7 +904,7 @@ WITH req_d AS (
                 CASE
                     WHEN req_compte_acq.mont_pen_acq IS NOT NULL THEN req_compte_acq.mont_pen_acq
                     ELSE 0::bigint
-                END || '€</td>'::text, ''::text ORDER BY req_a.annee) || '</tr>'::text AS tableau_pen_acq,
+                END || '€</td align=center>'::text, ''::text ORDER BY req_a.annee) || '</tr>'::text AS tableau_pen_acq,
                 
             string_agg(('<td>'::text || req_a.annee) || '</td>'::text, ''::text ORDER BY req_a.annee) AS annee
             
