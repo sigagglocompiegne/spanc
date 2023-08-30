@@ -2411,7 +2411,7 @@ update on
     m_spanc.an_spanc_installation for each row execute procedure ft_r_timestamp_maj();
    
 create trigger t_t3_an_spanc_installation_controle_saisie before
-INSERT OR update on
+INSERT OR update OR DELETE on
     m_spanc.an_spanc_installation for each row execute procedure m_spanc.ft_m_controle_saisie_instal();   
 
 create trigger t_t8_refresh_carto after
