@@ -9,6 +9,7 @@
 /*
 #################################################################### SUIVI CODE SQL ####################################################################
 
+-- 2023/08/30 : GB / Ajout de patronymes
 -- 2023/08/27 : GB / Ajustement de structures et des vues fonctionnelles suite intégration d'un jeu de données
 -- 2023/08/07 : GB / Ajustement suite traitement des insertions des contrôles CCLO
 -- 2023/06/23 : GB / Ajustement du code SQL suite retour de la période test
