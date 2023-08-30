@@ -743,6 +743,8 @@ Valeurs possibles :
 |11|Monsieur|
 |12|Madame|
 |20|Madame & Monsieur|
+|21|Monsieur & Monsieur|
+|22|Madame & Madame|
 |30|Mesdames & Messieurs|
 |40|SCI|
 |99|Autre|
