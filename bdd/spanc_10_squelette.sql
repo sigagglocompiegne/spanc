@@ -1008,15 +1008,9 @@ elseif 	TG_OP ='UPDATE' then
 	raise exception 'Vous ne pouvez pas réactiver une installation désactivée.';
 	end if;
 
+elseif 	TG_OP ='DELETE' then
 
-    if new.inst_etat = '20' then
-    raise exception 'Vous ne pouvez pas modifier un état en "Désactivée". Utilisez le bouton "SUPPRIMER " en bas de la fiche si vous souhaitez désactiver l''installation.';
-    end if;
-  
-  
-    elseif 	TG_OP ='DELETE' then
-
-    new.inst_etat := '20';
+     raise exception 'Vous ne pouvez pas supprimer une installation. Modifier la statut de l''installation en "Désactivée" dans la fiche.';
 
 end if;
 
