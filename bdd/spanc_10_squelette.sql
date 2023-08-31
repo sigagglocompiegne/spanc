@@ -2139,7 +2139,7 @@ if TG_OP='UPDATE' or TG_OP = 'INSERT' then
  end if;
   if (select verrou_min from m_spanc.an_spanc_controle where idcontr = new.id) is true and 
   (select verrou_max from m_spanc.an_spanc_controle where idcontr = new.id) is true THEN
-   RAISE EXCEPTION 'CCONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
+   RAISE EXCEPTION 'CONTROLE VERROUILLE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
  end if;
 
 elseif TG_OP='DELETE' then
