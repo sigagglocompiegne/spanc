@@ -935,7 +935,7 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab5
 
 
 
--- ########################################################### xapps_an_vmr_spanc_periodicite ##################################################################
+-- ########################################################### xapps_geo_vmr_spanc_periodicite ##################################################################
 
 drop MATERIALIZED VIEW if exists m_spanc.xapps_geo_vmr_spanc_periodicite;
 CREATE MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_periodicite
