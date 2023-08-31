@@ -937,8 +937,8 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab5
 
 -- ########################################################### xapps_an_vmr_spanc_periodicite ##################################################################
 
-drop MATERIALIZED VIEW if exists m_spanc.xapps_an_vmr_spanc_periodicite;
-CREATE MATERIALIZED VIEW m_spanc.xapps_an_vmr_spanc_periodicite
+drop MATERIALIZED VIEW if exists m_spanc.xapps_geo_vmr_spanc_periodicite;
+CREATE MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_periodicite
 TABLESPACE pg_default
 AS 
 
@@ -1362,7 +1362,34 @@ SELECT ad.idinstal,
         END - now()::date)
 )
 select 
-*,
+idinstal,
+idcontr,
+date_trap,
+date_act,
+prochain_controle_dans,
+date_prcontl,
+tri_nb_jours,
+periode_contr,
+mois_ecart,
+annee_ecart,
+contr_concl,
+contr_concl_a,
+lib_contr_concl,
+contr_nat,
+lib_contr_nat,
+contr_confor,
+epci,
+contr_perio_c,
+contr_perio_nc,
+contr_trav,
+contr_abs,
+rel_perio,
+rel_vente_ai,
+rel_vente_nc,
+idadresse,
+case when periode_contr = 'Contrôle en retard' or periode_contr = 'Contrôle à réaliser dans l''année' then 'Contrôle à réaliser dans l''année' else periode_contr  
+end as periode_contr_0
+,
 case when left(prochain_controle_dans,1) = '-' then 'Contrôle en retard' else '' END
 as  affiche_contr_depasse_0,
 
@@ -1432,18 +1459,20 @@ WHEN  contr_concl = '30' THEN
 WHEN  contr_concl = '00' THEN 
 '<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_non_atribue.png" >'
 END
-end as  affiche_conformite_0
+end as  affiche_conformite_0,
+a.adresse,
+a.geom
 
-
-from req_final
+from req_final 
+join m_spanc.xapps_geo_vmr_spanc_anc a on a.id_adresse = req_final.idadresse 
         
 WITH DATA;
 
 -- View indexes:
-CREATE INDEX idx_4676_idinstal ON m_spanc.xapps_an_vmr_spanc_periodicite USING btree (idinstal);
+CREATE INDEX idx_4676_idinstal ON m_spanc.xapps_geo_vmr_spanc_periodicite USING btree (idinstal);
 
 
-COMMENT ON MATERIALIZED VIEW m_spanc.xapps_an_vmr_spanc_periodicite IS 'Vue matérialisée applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active (rafraichie après chaque insertion ou mise à jour d''un contrôle)';
+COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_periodicite IS 'Vue matérialisée applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active (rafraichie après chaque insertion ou mise à jour d''un contrôle)';
 
 -- ########################################################### xapps_an_vmr_spanc_conception ##################################################################
 
