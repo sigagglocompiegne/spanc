@@ -939,348 +939,331 @@ COMMENT ON VIEW m_spanc.xapps_geo_v_spanc_tab5
 
 drop MATERIALIZED VIEW if exists m_spanc.xapps_an_vmr_spanc_periodicite;
 CREATE MATERIALIZED VIEW m_spanc.xapps_an_vmr_spanc_periodicite
+TABLESPACE pg_default
 AS 
 
+with req_final as 
+(
 SELECT ad.idinstal,
     ad.idcontr,
     ad.date_trap::date AS date_trap,
     ad.date_act::date AS date_act,
     regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(age(
         CASE
-            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_abs::text || ' month'::text)::interval))::date
-            -- ajout contrôle lié aux ventes
-            WHEN ad.contr_concl::text IN ('10','80') AND ad.contr_nat::text = '50'::text THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['10'::text, '80'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
-            
-            WHEN ad.contr_concl::text IN ('31','32','40') AND ad.contr_nat::text = '50' THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::text, '32'::text, '40'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
-            -- fin ajout controle lié aux ventes
-            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_trav::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_perio::text || ' month'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
+            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
             ELSE NULL::date
         END::timestamp with time zone, now()::date::timestamp with time zone)::text, 'years'::text, 'ans'::text), 'year'::text, 'an'::text), 'mons'::text, 'mois'::text), 'mon'::text, 'mois'::text), 'days'::text, 'jour(s)'::text), 'day'::text, 'jour'::text), '00:00:00'::text, '0 jour'::text) AS prochain_controle_dans,
-        
         CASE
-            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_abs::text || ' month'::text)::interval))::date
-            -- ajout contrôle lié aux ventes
-            WHEN ad.contr_concl::text IN ('10','80') AND ad.contr_nat::text = '50' THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['10'::text, '80'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text IN ('31','32','40') AND ad.contr_nat::text = '50' THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::text, '32'::text, '40'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
-            -- fin ajout controle lié aux ventes
-            
-            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_trav::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_perio::text || ' month'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
+            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
             ELSE NULL::date
         END AS date_prcontl,
-        
         CASE
-            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_abs::text || ' month'::text)::interval))::date
-            -- ajout contrôle lié aux ventes
-            WHEN ad.contr_concl::text IN ('10','80') AND ad.contr_nat::text = '50' THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['10'::text, '80'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text IN ('31','32','40') AND ad.contr_nat::text = '50' THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::text, '32'::text, '40'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
-                -- fin ajout controle lié aux ventes
-            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_trav::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_perio::text || ' month'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
+            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
             ELSE NULL::date
         END - now()::date AS tri_nb_jours,
-    case when    
-    (case 
-    	when contr_confor = 'ZZ' then to_char(now(),'YYYY')
-    else
-    	to_char(
-    CASE
-            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
+        CASE
+            WHEN
             CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_abs::text || ' month'::text)::interval))::date
-            -- ajout contrôle lié aux ventes
-            WHEN ad.contr_concl::text IN ('10','80') AND ad.contr_nat::text = '50' THEN (
+                WHEN ad.contr_confor::text = 'ZZ'::text THEN to_char(now(), 'YYYY'::text)
+                ELSE to_char(
+                CASE
+                    WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_abs::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['10'::text, '80'::text])) AND ad.contr_nat::text = '50'::text THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::text, '32'::text, '40'::text])) AND ad.contr_nat::text = '50'::text THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_trav::text || ' month'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_perio::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
+                    ELSE NULL::date
+                END::timestamp with time zone, 'YYYY'::text)
+            END = to_char(now(), 'YYYY'::text) THEN 'Contrôle à réaliser dans l''année'::text
+            WHEN
             CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text IN ('31','32','40') AND ad.contr_nat::text = '50' THEN (
+                WHEN ad.contr_confor::text = 'ZZ'::text THEN to_char(now(), 'YYYY'::text)
+                ELSE to_char(
+                CASE
+                    WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_abs::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['10'::text, '80'::text])) AND ad.contr_nat::text = '50'::text THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::text, '32'::text, '40'::text])) AND ad.contr_nat::text = '50'::text THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_trav::text || ' month'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_perio::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
+                    ELSE NULL::date
+                END::timestamp with time zone, 'YYYY'::text)
+            END::integer < to_char(now(), 'YYYY'::text)::integer THEN 'Contrôle en retard'::text
+            ELSE
             CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
-            -- fin ajout controle lié aux ventes
-            
-            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_trav::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_perio::text || ' month'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
-            ELSE NULL::date
-        END,'YYYY') end) = to_char(now(),'YYYY') then 'Contrôle à réaliser dans l''année' 
-        when 
-        (case 
-    	when contr_confor = 'ZZ' then to_char(now(),'YYYY')
-    else
-    	to_char(
-    CASE
-            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_abs::text || ' month'::text)::interval))::date
-            -- ajout contrôle lié aux ventes
-            WHEN ad.contr_concl::text IN ('10','80') AND ad.contr_nat::text = '50' THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text IN ('31','32','40') AND ad.contr_nat::text = '50' THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
-            -- fin ajout controle lié aux ventes
-            
-            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_trav::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_perio::text || ' month'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
-            ELSE NULL::date
-        END,'YYYY') end)::integer < to_char(now(),'YYYY')::integer then 'Contrôle en retard'
-        
-        else 
-        (case 
-    	when contr_confor = 'ZZ' then to_char(now(),'YYYY')
-    else
-    	to_char(
-    CASE
-            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_abs::text || ' month'::text)::interval))::date
-            -- ajout contrôle lié aux ventes
-            WHEN ad.contr_concl::text IN ('10','80') AND ad.contr_nat::text = '50' THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text IN ('31','32','40') AND ad.contr_nat::text = '50' THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
-            -- fin ajout controle lié aux ventes
-            
-            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_trav::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying,'60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.rel_perio::text || ' month'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
-            CASE
-                WHEN ad.date_act IS NOT NULL THEN ad.date_act
-                ELSE ad.date_trap
-            END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
-            ELSE NULL::date
-        END,'YYYY') end)
-        end
-    as periode_contr,
-    (select EXTRACT(YEAR FROM age) * 12 + EXTRACT(MONTH FROM age) AS mois_ecart
-    FROM age(now(), ad.date_trap) AS t(age)),
-        (select EXTRACT(YEAR FROM age) AS annee_ecart
-    FROM age(now(), ad.date_trap) AS t(age)),
+                WHEN ad.contr_confor::text = 'ZZ'::text THEN to_char(now(), 'YYYY'::text)
+                ELSE to_char(
+                CASE
+                    WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_abs::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['10'::text, '80'::text])) AND ad.contr_nat::text = '50'::text THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::text, '32'::text, '40'::text])) AND ad.contr_nat::text = '50'::text THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_trav::text || ' month'::text)::interval))::date
+                    WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.rel_perio::text || ' month'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
+                    CASE
+                        WHEN ad.date_act IS NOT NULL THEN ad.date_act
+                        ELSE ad.date_trap
+                    END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
+                    WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
+                    ELSE NULL::date
+                END::timestamp with time zone, 'YYYY'::text)
+            END
+        END AS periode_contr,
+    ( SELECT date_part('year'::text, t.age) * 12::double precision + date_part('month'::text, t.age) AS mois_ecart
+           FROM age(now(), ad.date_trap::timestamp with time zone) t(age)) AS mois_ecart,
+    ( SELECT date_part('year'::text, t.age) AS annee_ecart
+           FROM age(now(), ad.date_trap::timestamp with time zone) t(age)) AS annee_ecart,
     ad.contr_concl,
     ad.contr_concl_a,
     ad.lib_contr_concl,
@@ -1326,67 +1309,141 @@ SELECT ad.idinstal,
                     m_spanc.an_spanc_installation i
                   WHERE c.idinstal = i.idinstal AND i.inst_etat::text = '10'::text AND c.contr_nat::text <> '00'::text
                   GROUP BY c.idinstal) b_1 ON a.idinstal = b_1.idinstal AND a.date_trap = b_1.date_trap) ad
-  WHERE ad.contr_concl::text = ANY (ARRAY['10'::character varying, '20'::character varying, '40'::character varying, '50'::character varying, '80'::character varying, '31'::character varying, '32'::character varying, 'ZZ'::character varying]::text[])
-
+  WHERE ad.contr_concl::text = ANY (ARRAY['10'::character varying::text, '20'::character varying::text, '40'::character varying::text, '50'::character varying::text, '80'::character varying::text, '31'::character varying::text, '32'::character varying::text, 'ZZ'::character varying::text])
   ORDER BY (
         CASE
-            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '10'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_abs::text || ' month'::text)::interval))::date
-            
-            -- Début ajout contrôle lié à une vente
-             WHEN ad.contr_concl::text IN ('10','80') AND ad.contr_nat::text = '50' THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['10'::text, '80'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_ai::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text IN ('31','32','40') AND ad.contr_nat::text = '50' THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::text, '32'::text, '40'::text])) AND ad.contr_nat::text = '50'::text THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_vente_nc::text || ' month'::text)::interval))::date
-            -- fin ajout controle lié à une vente
-            
-            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '20'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_c::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '40'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_trav::text || ' month'::text)::interval))::date
-            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying, '20'::character varying, '30'::character varying, '40'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN ad.contr_concl::text = '80'::text AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text, '20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.rel_perio::text || ' month'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying, '30'::character varying, '40'::character varying, '50'::character varying, '60'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['20'::character varying::text, '30'::character varying::text, '40'::character varying::text, '50'::character varying::text, '60'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying, '32'::character varying]::text[])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying, '14'::character varying]::text[])) THEN (
+            WHEN (ad.contr_concl::text = ANY (ARRAY['31'::character varying::text, '32'::character varying::text])) AND (ad.contr_nat::text = ANY (ARRAY['13'::character varying::text, '14'::character varying::text])) THEN (
             CASE
                 WHEN ad.date_act IS NOT NULL THEN ad.date_act
                 ELSE ad.date_trap
             END + ((ad.contr_perio_nc::text || ' year'::text)::interval))::date
-            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying, '12'::character varying]::text[]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
+            WHEN ad.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text]) THEN (ad.date_trap + ((ad.contr_trav::text || ' year'::text)::interval))::date
             ELSE NULL::date
-        END - now()::date)         
-       WITH DATA;
+        END - now()::date)
+)
+select 
+*,
+case when left(prochain_controle_dans,1) = '-' then 'Contrôle en retard' else '' END
+as  affiche_contr_depasse_0,
+
+CASE
+WHEN tri_nb_jours <= 0 THEN '<td bgcolor="#93117e"><font size=2 color="#ffffff"><b>' || prochain_controle_dans || '</b></font></td>'
+WHEN tri_nb_jours > 0 and tri_nb_jours <= 30 THEN '<td bgcolor="#FF0000"><font size=2 color="#ffffff"><b>' || prochain_controle_dans || '</b></font></td>'
+WHEN tri_nb_jours > 30 and tri_nb_jours <= 180 THEN '<td bgcolor="#f29400"><font size=2 color="#ffffff"><b>' || prochain_controle_dans || '</b></font></td>'
+WHEN tri_nb_jours > 180 THEN '<td bgcolor="#009036"><font size=2 color="#ffffff"><b>' || prochain_controle_dans || '</b></font></td>'
+END
+as affiche_prcontr_0,
+
+CASE WHEN contr_nat <> '11' and contr_nat <> '12' THEN
+CASE 
+WHEN  contr_confor = '00' THEN 
+'Non attribué'
+WHEN  contr_confor = '10' THEN 
+'Conforme'
+WHEN contr_confor = '20' THEN 
+CASE WHEN contr_concl IN ('31','32') THEN
+'Non conforme (grave)'
+ELSE
+'Non conforme (simple)'
+END
+WHEN  contr_confor = '30' THEN 
+'Absence d''installation'
+WHEN  contr_confor = 'ZZ' THEN 
+'Refus du contrôle'
+END
+ELSE
+CASE
+WHEN  contr_concl = '10' THEN 
+'Avis favorable'
+WHEN  contr_concl = '20' THEN 
+'Avis défavorable'
+WHEN  contr_concl = '30' THEN 
+'Dossier incomplet'
+WHEN  contr_concl = '00' THEN 
+'Avis non attribué'
+END
+end as  affiche_conformite_texte_0,
+
+CASE WHEN contr_nat <> '11' and contr_nat <> '12' THEN
+CASE 
+WHEN  contr_confor = '00' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_non_atribue.png" >'
+WHEN  contr_confor = '10' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_conforme.png" >'
+WHEN  contr_confor = '20' THEN 
+CASE WHEN contr_concl IN ('31','32') THEN
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_nonconforme.png" >'
+ELSE
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_nonconforme_st.png" >'
+END
+WHEN  contr_confor = '30' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_absence_instal.png" >'
+WHEN  contr_confor = 'ZZ' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/cc_refus.png" >'
+END
+ELSE
+CASE
+WHEN  contr_concl = '10' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_favorable.png" >'
+WHEN  contr_concl = '20' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_defavorable.png" >'
+WHEN  contr_concl = '30' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_incomplet.png" >'
+WHEN  contr_concl = '00' THEN 
+'<img src="http://geo.compiegnois.fr/documents/metiers/resh/spanc/ac_non_atribue.png" >'
+END
+end as  affiche_conformite_0
+
+
+from req_final
         
+WITH DATA;
+
+-- View indexes:
+CREATE INDEX idx_4676_idinstal ON m_spanc.xapps_an_vmr_spanc_periodicite USING btree (idinstal);
+
 
 COMMENT ON MATERIALIZED VIEW m_spanc.xapps_an_vmr_spanc_periodicite IS 'Vue matérialisée applicative calculant les dates des prochains contrôles à partir des derniers contrôles en fonction de leur nature et de leur conclusion de chaque installation active (rafraichie après chaque insertion ou mise à jour d''un contrôle)';
-
 
 -- ########################################################### xapps_an_vmr_spanc_conception ##################################################################
 
