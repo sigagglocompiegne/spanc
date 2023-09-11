@@ -941,13 +941,26 @@ BEGIN
 
 -- contrôle sur la saisie de la section cadastrale et le numéro de parcelle (longueur)
 IF length(NEW.ccosec) <> 2 OR length(NEW.dnupla) <> 4 THEN
-RAISE EXCEPTION USING MESSAGE = 'La section doit être codée sur 2 caractères et la parcelle sur 4 caractères. Vérifiez votre saisie et recommencer.';
+RAISE EXCEPTION USING MESSAGE = 'La section doit être codée sur 2 caractères (mettre un "0" devant la lettre si besoin, ex : 0B) et la parcelle sur 4 caractères. Vérifiez votre saisie et recommencer.';
 END IF;
 
 -- contrôle sur la saisie de la section cadastrale (positionnement du 0)
 IF (right(NEW.ccosec,1) = '0' OR NEW.ccosec = '00') THEN
 RAISE EXCEPTION USING MESSAGE = 'Une section ne peut pas être composée d''une lettre suivie d''un 0, n''y être composée d''un double 0. Corrigez votre saisie et validez.';
 END IF;
+
+-- contrôle sur la saisie de la section cadastrale (caractère hors lettre et 0)
+IF length(NEW.ccosec) = 2 AND
+left(NEW.ccosec,1) NOT IN ('0','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z') THEN
+RAISE EXCEPTION USING MESSAGE = 'Une section doit être codée sur 2 caractères et en majusucle. Si la section est codée sur 1 caractère, ajouter un "0" devant la lettre (ex : 0B).';
+END IF;
+
+-- contrôle sur la saisie de la section cadastrale (positionnement du 0)
+IF length(NEW.ccosec) = 2 AND
+right(NEW.ccosec,1) NOT IN ('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z') THEN
+RAISE EXCEPTION USING MESSAGE = 'Une section doit être codée sur 2 caractères et en majusucle. Si la section est codée sur 1 caractère, ajouter un "0" devant la lettre (ex : 0B).';
+END IF;
+
 
 NEW.ccosec := upper(NEW.ccosec);
 
@@ -959,6 +972,8 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_verif_ref_cad() 
 IS 'Fonction trigger vérifiant la saisie des références cadastrales';
+
+
 
 
 -- ################################################################# Fonction - ft_m_controle_saisie_instal  ############################################
