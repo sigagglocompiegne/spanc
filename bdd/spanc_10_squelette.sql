@@ -2089,6 +2089,8 @@ RAISE EXCEPTION 'Vous ne pouvez pas supprimer la configuration.';
 
 end if;
 
+refresh materialized view m_spanc.xapps_geo_vmr_spanc_periodicite;
+
  return new ;
 
 END;
