@@ -1363,7 +1363,7 @@ begin
     end if;
    
    -- si conclusion pas de défaut, un équipement ne peut pas être inaccessible ou à aucun
-    if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_pretrait in ('10','11') or new.equ_rejet in ('10','11')) then
+    if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_trait in ('10','11') or new.equ_rejet in ('10','11')) then
  		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"';
  	end if;
 
@@ -1715,7 +1715,7 @@ begin
     end if;
    
    -- si conclusion pas de défaut, un équipement ne peut pas être inaccessible ou à aucun
-    if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_pretrait in ('10','11') or new.equ_rejet in ('10','11')) then
+    if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_trait in ('10','11') or new.equ_rejet in ('10','11')) then
  		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"';
  	end if;
 
