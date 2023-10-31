@@ -912,7 +912,12 @@ BEGIN
    v_epci := (select values from custom_attributes ca where name = 'epci' and user_login = NEW.op_sai);
    
   -- je lance recherche le n° d'ordre pour l'EPCI concernée 
-   v_num := (SELECT count(*)+1 FROM m_spanc.an_spanc_controle WHERE epci = v_epci);
+  if v_epci = 'arc' THEN
+  v_num := (SELECT max(substring(idcontr from 5 for 10)::integer)+1 FROM m_spanc.an_spanc_controle WHERE epci = v_epci);
+  else
+  v_num := (SELECT max(substring(idcontr from 6 for 10)::integer)+1 FROM m_spanc.an_spanc_controle WHERE epci = v_epci);
+  end if;
+  
   
   -- je formate l'identifiant du contrôle
    new.idcontr := v_epci || '_' || v_num;
@@ -923,8 +928,9 @@ END;
 $function$
 ;
 
-COMMENT ON FUNCTION m_spanc.ft_m_idcontr() 
-IS 'Fonction trigger générant la clé unique du contrôle composé de l''EPCI et d''un n° d''ordre';
+COMMENT ON FUNCTION m_spanc.ft_m_idcontr() IS 'Fonction trigger générant la clé unique du contrôle composé de l''EPCI et d''un n° d''ordre';
+
+
 
 
 
