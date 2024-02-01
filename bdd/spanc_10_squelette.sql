@@ -1493,12 +1493,12 @@ begin
  if new.acq_fact is true and new.date_fact is null then 
     RAISE EXCEPTION 'Si vous acquitez une facture, il faut renseigner obligatoirement la date de facturation.';
  end if;
-
+/*
  -- si date de facturation > à la date de translmission du rapport
  if new.date_fact < new.date_trap then 
     RAISE EXCEPTION 'Vous ne pouvez pas indiquer une date de facturation inférieure à la date d''envoi du rapport.';
  end if;
-
+*/
 
  -- si refus et modif non concerné pas possible
  if new.contr_concl = '80' and new.contr_nreal = 'ZZ' then 
@@ -1909,10 +1909,12 @@ begin
     RAISE EXCEPTION 'Si vous acquitez une facture, il faut renseigner obligatoirement la date de facturation.';
  end if;
 
+/*
  -- si date de facturation > à la date de translmission du rapport
  if new.date_fact < new.date_trap then 
     RAISE EXCEPTION 'Vous ne pouvez pas indiquer une date de facturation inférieure à la date d''envoi du rapport.';
  end if;
+*/
 
   -- si date de facturation et pas de date de transmission du rapport
    if new.date_fact is not null and new.date_trap is null then 
