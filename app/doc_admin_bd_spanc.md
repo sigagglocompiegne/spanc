@@ -26,12 +26,12 @@ Pour rappel des grands principes :
 
 ## Schéma fonctionnel
 
-![spanc_schema](spanc_schema_fonctionnel.png)
+![spanc_schema](/bdd/spanc_schema_fonctionnel.png)
 
 ## Modèle relationel simplifié
 
 
-![spanc_mcd](mcd_v2.png)
+![spanc_mcd](/bdd/mcd_v2.png)
 
 ## Dépendances
 
