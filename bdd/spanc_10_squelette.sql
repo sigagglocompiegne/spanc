@@ -1149,7 +1149,7 @@ COMMENT ON FUNCTION m_spanc.ft_m_controle_saisie_contact() IS 'Fonction de contr
 
 -- ################################################################# Fonction - ft_m_controle_conform  ############################################
 
-
+-- DROP FUNCTION m_spanc.ft_m_controle_conform();
 
 CREATE OR REPLACE FUNCTION m_spanc.ft_m_controle_conform()
  RETURNS trigger
@@ -1182,18 +1182,18 @@ begin
                   GROUP BY c.idinstal) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
                   ) ad where ad.idinstal = new.idinstal) IN ('31','32') and new.contr_concl IN ('20','40','10','00') THEN
 
-     			RAISE EXCEPTION 'Vous ne pouvez pas insérer un nouveau contrôle de meilleur qualité après avoir saisi un contrôle avec une non-conformité grave.';
+     			RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas insérer un nouveau contrôle de meilleur qualité après avoir saisi un contrôle avec une non-conformité grave.</font><br><br>';
 
     end if;
    
-
+   
     -- SI L'INSTALLATION DISPOSE DEJA D'UN CONTROLE ON NE PEUT PAS AJOUTER UNE ANALYSE DE DEMANDE DE TRAVAUX (hormis une demande de travaux) 
  	IF (SELECT count(*) FROM  m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i 
  	WHERE c.idinstal = i.idinstal AND i.idinstal = NEW.idinstal and contr_nat not in ('11','12')) > 0 
  	AND NEW.contr_nat IN ('11','12') 
  	
  	THEN
- 		RAISE EXCEPTION 'Vous ne pouvez pas insérer une demande de travaux car il existe déjà un contrôle sur cette installation. Vous devez créer une nouvelle installation et y insérer votre demande.';
+ 		RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas insérer une demande de travaux car il existe déjà un contrôle sur cette installation. Vous devez créer une nouvelle installation et y insérer votre demande.</font><br><br>';
  	END IF;
  
     -- SI L'INSTALLATION DISPOSE DEJA D'UN DIAGNOSTIC ON NE PEUT PAS EN AJOUTER UN AUTRE IDEM
@@ -1202,7 +1202,7 @@ begin
  	AND NEW.contr_nat IN ('20') 
  	
  	THEN
- 		RAISE EXCEPTION 'Vous ne pouvez pas insérer un nouveau diagnostic initial, il en existe déjà un sur cette installation.';
+ 		RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas insérer un nouveau diagnostic initial, il en existe déjà un sur cette installation.</font><br><br>';
  	END IF;
  
     -- SI AJOUT d'un diagnostic initial ne doit pas avoir de contrôle précédent
@@ -1211,7 +1211,7 @@ begin
  	AND NEW.contr_nat = '20' 
  	
  	THEN
- 		RAISE EXCEPTION 'Vous ne pouvez pas insérer un diagnostic initial car des contrôles existent déjà pour cette installation.';
+ 		RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas insérer un diagnostic initial car des contrôles existent déjà pour cette installation.</font><br><br>';
  	END IF;
  
     -- SI L'INSTALLATION DISPOSE D'UNE DEMANDE DE TRAVAUX NEUF OU REHAB, LA VISTE D'EXECUTION DOIT ETRE NEUF OU REHAB
@@ -1221,7 +1221,7 @@ begin
  	AND NEW.contr_nat = '14' 
  	
  	THEN
- 		RAISE EXCEPTION 'Vous ne pouvez pas insérer une visite d''exécution pour des travaux de réhabilitation car il existe une demande de travaux neuf.';
+ 		RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas insérer une visite d''exécution pour des travaux de réhabilitation car il existe une demande de travaux neuf.</font><br><br>';
  	END IF;
     -- réhabilitation
     IF (SELECT count(*) FROM  m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i 
@@ -1229,7 +1229,7 @@ begin
  	AND NEW.contr_nat = '13' 
  	
  	THEN
- 		RAISE EXCEPTION 'Vous ne pouvez pas insérer une visite d''exécution pour des travaux neufs car il existe une demande de travaux de réhabilitation.';
+ 		RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas insérer une visite d''exécution pour des travaux neufs car il existe une demande de travaux de réhabilitation.</font><br><br>';
  	END IF;
  
     
@@ -1248,12 +1248,12 @@ begin
  	
     -- si une demande de travaux sans conclusion erreur
     IF new.contr_nat IN ('11','12') and NEW.dem_concl IS null THEN
-       RAISE EXCEPTION 'La conclusion de la demande de travaux ne peut pas être nulle.';
+       RAISE EXCEPTION '<font color="#ff0000">La conclusion de la demande de travaux ne peut pas être nulle.</font><br><br>';
     END IF;
    
      -- si un contrôle sans conclusion erreur
     IF new.contr_nat not IN ('11','12') and NEW.contr_concl IS null THEN
-       RAISE EXCEPTION 'La conclusion du contrôle ne peut pas être nulle.';
+       RAISE EXCEPTION '<font color="#ff0000">La conclusion du contrôle ne peut pas être nulle.</font><br><br>';
     END IF;
  	
 	-- SAISIE AUTOMATIQUE DE LA CONFORMITE
@@ -1291,14 +1291,14 @@ begin
    -- si une demande de travaux à une conclusion (hors non renseigné et non concerné) sans date de visite
    if new.date_vis is null and new.dem_concl in ('10','20','30') then
    
-	raise exception 'Vous devez renseigner une date de visite lorsque vous saisissez un avis pour une demande de travaux. Cette date correspond à la date de votre analyse de la demande.';
+	raise exception '<font color="#ff0000">Vous devez renseigner une date de visite lorsque vous saisissez un avis pour une demande de travaux. Cette date correspond à la date de votre analyse de la demande.</font><br><br>';
 	   
 	end if;
 
     -- si une demande de travaux n'a pas de conclusion (hors non renseigné et non concerné) pas de date de visite possible
    if new.date_vis is not null AND NEW.contr_nat IN ('11','12') and new.dem_concl in ('00','ZZ') then
    
-	raise exception 'Vous ne pouvez pas avoir une date de visite avec une conclusion à "Non renseignée" ou à "Non concerné".';
+	raise exception '<font color="#ff0000">Vous ne pouvez pas avoir une date de visite avec une conclusion à "Non renseignée" ou à "Non concerné".</font><br><br>';
 	   
 	end if;
 
@@ -1309,16 +1309,16 @@ begin
     -- SI demande de travaux avec avis
     if new.dem_concl in ('10','20','30') then
     	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%11%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%10%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné", "Aucun" ou "Inaccessible"';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer un équipement à "Non renseigné", "Aucun" ou "Inaccessible"</font><br><br>';
     	end if;
     	if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
  		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;   
      	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
     end if;
     
@@ -1327,50 +1327,50 @@ begin
     
     if new.contr_concl in ('20','31','32','40') then
     	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné" avec une conclusion du contrôle autre que "Non renseigné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer un équipement à "Non renseigné" avec une conclusion du contrôle autre que "Non renseigné".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
  		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;   
      	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%10%' and new.equ_trait like '%99%') 
         or (new.equ_rejet like '%10%' and new.equ_rejet like '%99%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Aucun" et "Autre".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Aucun" et "Autre".</font><br><br>';
        	end if;
         if (new.equ_pretrait like '%00%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%00%' and new.equ_trait like '%99%') 
         or (new.equ_rejet like '%00%' and new.equ_rejet like '%99%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non renseigné" et "Autre".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Non renseigné" et "Autre".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%11%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%11%' and new.equ_trait like '%99%') 
         or (new.equ_rejet like '%11%' and new.equ_rejet like '%99%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Autre".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Inaccessible" et "Autre".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%11%') or (new.equ_trait like '%10%' and new.equ_trait like '%11%') 
         or (new.equ_rejet like '%10%' and new.equ_rejet like '%11%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Aucun".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Inaccessible" et "Aucun".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%ZZ%') or (new.equ_trait like '%10%' and new.equ_trait like '%ZZ%') 
         or (new.equ_rejet like '%10%' and new.equ_rejet like '%ZZ%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non concerné" et "Aucun".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Non concerné" et "Aucun".</font><br><br>';
     	end if;
 
     
     
     end if;
-    
-   -- pour un contrôle avec une conclusion Absence d'installation, tous les équipements à "Aucun"
-    if new.contr_concl IN ('10','80') and new.equ_pretrait || new.equ_trait || new.equ_rejet <> '101010'  THEN
-     raise EXCEPTION 'Vous devez indiquer aucun équipement pour toutes les filières en cas d''un contrôle avec une conclusion "Absence d''installation".';
+  --  raise EXCEPTION '--> %', new.equ_pretrait || new.equ_trait; 
+   -- pour un contrôle avec une conclusion Absence d'installation, tous les équipements à "Aucun" ou inacessible sauf les rejets qui peuvent être renseignés
+    if new.contr_concl IN ('10','80') and new.equ_pretrait || new.equ_trait <> '1010' and new.equ_pretrait || new.equ_trait <> '1111'  THEN
+     raise EXCEPTION '<font color="#ff0000">Vous devez indiquer "aucun équipement" ou "inacessible" pour les filières de pré-tratiement et de traitement en cas d''un contrôle avec une conclusion "Absence d''installation".</font><br><br>';
     end if;
    
    -- si conclusion pas de défaut, un équipement ne peut pas être inaccessible ou à aucun
     if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_trait in ('10','11') or new.equ_rejet in ('10','11')) then
- 		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"';
+ 		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"</font><br><br>';
  	end if;
 
   -- ##### FIN DE LA GESTION DES COHERENCES DANS LA SAISIE DES EQUIPEMENTS  #######
@@ -1394,43 +1394,43 @@ begin
     -- si je choisie autre dans les équipements je dois obligatoirement saisir le nom
  	-- pré-traitement
     if (new.equ_pretrait = '99' or new.equ_pretrait like '%99%') and (new.equ_pretrait_a is null or new.equ_pretrait_a = '') then 
-        RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+        RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.</font><br><br>';
        
     end if;
        -- traitement
     if (new.equ_trait = '99' or new.equ_trait like '%99%') and (new.equ_trait_a is null or new.equ_trait_a = '') then 
-       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+       RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.</font><br><br>';
     end if;
     -- rejet
     if (new.equ_rejet = '99' or new.equ_rejet like '%99%') and (new.equ_rejet_a is null or new.equ_rejet_a = '') then 
-       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+       RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.</font><br><br>';
     end if;
  
    -- ##### FIN DES EQUIPEMENTS A AUTRE #####
    
     -- si il existe déjà un contrôle avec une même date de visite, pas possible
    if (select count(*) from m_spanc.an_spanc_controle where date_vis = new.date_vis and idinstal = new.idinstal) > 0 then 
-   RAISE exception 'Vous ne pouvez pas saisir ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste';
+   RAISE exception '<font color="#ff0000">Vous ne pouvez pas saisir ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste</font><br><br>';
    end if;
   
    -- si aucune date de visite n'est renseignée, l'enregistrement de la conformité ne peut pas avoir lieu (sauf si Non renseigné)
    if new.date_vis is not null and new.contr_concl = '00' then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer le contrôle avec une date de visite et mettre en conclusion "Non renseignée".';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer le contrôle avec une date de visite et mettre en conclusion "Non renseignée".</font><br><br>';
    end if;
   
   -- si aucune date de visite est renseignée, l'enregistrement de la conformité ne peut pas avoir lieu si Non renseigné sauf si la nature du contrôle n'est pas liée à une demande de travaux)
    if new.date_vis is null and new.contr_concl <> '00' and new.contr_nat in ('13','14','20','30','40','50','60') then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer le contrôle avec une conclusion différente de "Non renseigné" si vous n''indiquez pas une date de visite.';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer le contrôle avec une conclusion différente de "Non renseigné" si vous n''indiquez pas une date de visite.</font><br><br>';
    end if;
   
   -- si date de facturation et pas de date de transmission du rapport
    if new.date_fact is not null and new.date_trap is null then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer le contrôle si vous mettez une date de facturation sans date de transmission du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer le contrôle si vous mettez une date de facturation sans date de transmission du rapport.</font><br><br>';
    end if;
   
    -- si date de facturation est null et moyne de communication <> n.r pas possible
    if new.date_trap is null and new.contr_info <> '00' then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer si vous ne mettez pas une date de transmission du rapport avec un dernier moyen de communication renseigné.';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer si vous ne mettez pas une date de transmission du rapport avec un dernier moyen de communication renseigné.</font><br><br>';
    end if;
 
   /*
@@ -1439,60 +1439,77 @@ begin
    RAISE EXCEPTION 'Vous ne pouvez pas indiquer une date de visite dans le cadre d''un contrôle lié à une demande de travaux.';
    end if;
 */
+  
+   -- cohérence de l'année dans les dates saisies
+  IF (NEW.date_dem IS NOT NULL AND to_char(NEW.date_dem,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+  	 (NEW.date_prdv IS NOT NULL AND to_char(NEW.date_prdv,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+  	 (NEW.date_rdv IS NOT NULL AND to_char(NEW.date_rdv,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_vis IS NOT NULL AND to_char(NEW.date_vis,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_rap IS NOT NULL AND to_char(NEW.date_rap,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_fact IS NOT NULL AND to_char(NEW.date_fact,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_trap IS NOT NULL AND to_char(NEW.date_trap,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_act IS NOT NULL AND to_char(NEW.date_act,'YYYY')::integer NOT BETWEEN 1980 AND 2050)  
+  then
+   	RAISE EXCEPTION '<font color="#ff0000">Vous avez saisie une année incohérente dans l''une de vos dates.</font><br><br>';
+  END IF;
+  
+  
+  
   -- si aucune date de demande
   if new.date_dem is null then
-   RAISE EXCEPTION 'Vous devez renseigner obligatoirement la date de la demande.';
+   RAISE EXCEPTION '<font color="#ff0000">Vous devez renseigner obligatoirement la date de la demande.</font><br><br>';
   end if;
  
    -- date de visite obligatoire si date d'un rapport ou de transmission
   if new.date_vis is null and (new.date_rap is not null or new.date_trap is not null) then
-   RAISE EXCEPTION 'Vous devez saisir obligatoirement une date de visite';
+   RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement une date de visite</font><br><br>';
   end if;
  
   -- si date de la demande supérieure à la date de la visite
   if new.date_dem > new.date_vis then
-   RAISE EXCEPTION 'La date de la demande ne peut pas être supérieure à la date de visite.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de la demande ne peut pas être supérieure à la date de visite.</font><br><br>';
   end if;
  
    -- si date de la  visite est supérieur à la date du rapport
   if new.date_vis > new.date_rap then
-   RAISE EXCEPTION 'La date de la visite ne peut pas être supérieure à la date du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de la visite ne peut pas être supérieure à la date du rapport.</font><br><br>';
   end if;
  
     -- si date de la transmission du rapport est supérieur à la date du rapport
   if new.date_rap > new.date_trap then
-      RAISE EXCEPTION 'La date du rapport ne peut pas être supérieure à la date de transmission du rapport.';
+      RAISE EXCEPTION '<font color="#ff0000">La date du rapport ne peut pas être supérieure à la date de transmission du rapport.</font><br><br>';
   end if;
  
    -- si date de la visite est supérieur à la date de la transmission rapport
   if new.date_vis > new.date_trap then
-   RAISE EXCEPTION 'La date de la visite ne peut pas être supérieure à la date de transmission du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de la visite ne peut pas être supérieure à la date de transmission du rapport.</font><br><br>';
   end if;
  
    -- si date de transmission du rapport, la date du rapport ne peut pas être null
   if new.date_trap IS NOT null and new.date_rap IS null then
-   RAISE EXCEPTION 'Une date de transmission du rapport ne peut pas être indiqué sans indiquer la date du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">Une date de transmission du rapport ne peut pas être indiqué sans indiquer la date du rapport.</font><br><br>';
   end if;
  
     -- si date du RDV est inférieure à la demande
     if new.date_dem > new.date_rdv then
-   RAISE EXCEPTION 'La date du RDV ne peut pas être inférieure à la date de la demande.';
+   RAISE EXCEPTION '<font color="#ff0000">La date du RDV ne peut pas être inférieure à la date de la demande.</font><br><br>';
   end if;
  
     -- si date du RDV est inférieure à la date de prise de rdv
     if new.date_prdv > new.date_rdv then
-   RAISE EXCEPTION 'La date de prise de RDV ne peut pas être supérieure à la date du RDV.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de prise de RDV ne peut pas être supérieure à la date du RDV.</font><br><br>';
   end if;
  
  -- si mode de gestion = prestataire doit en choisir 1
  if left(new.mod_gest,1) = '2' and new.idpresta is null then 
- 	RAISE EXCEPTION 'Vous devez choisir un prestataire dans la liste.';
+ 	RAISE EXCEPTION '<font color="#ff0000">Vous devez choisir un prestataire dans la liste.</font><br><br>';
  end if;
 
  -- si montant acquité, date de facturation doit-être indiquée
  if new.acq_fact is true and new.date_fact is null then 
-    RAISE EXCEPTION 'Si vous acquitez une facture, il faut renseigner obligatoirement la date de facturation.';
+    RAISE EXCEPTION '<font color="#ff0000">Si vous acquitez une facture, il faut renseigner obligatoirement la date de facturation.</font><br><br>';
  end if;
+
 /*
  -- si date de facturation > à la date de translmission du rapport
  if new.date_fact < new.date_trap then 
@@ -1502,7 +1519,7 @@ begin
 
  -- si refus et modif non concerné pas possible
  if new.contr_concl = '80' and new.contr_nreal = 'ZZ' then 
-    RAISE EXCEPTION 'Vous ne pouvez pas indiquer un refus de contrôle et un motif à non concerné.';
+    RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer un refus de contrôle et un motif à non concerné.</font><br><br>';
  end if;
 
 
@@ -1570,7 +1587,7 @@ begin
 	or 
 	new.contr_info <> old.contr_info
 	) then 
-	RAISE EXCEPTION 'VERROU MINIMUM - vous pouvez modifier uniquement les élements de facturation non encore complétés.';
+	RAISE EXCEPTION '<font color="#ff0000">VERROU MINIMUM - vous pouvez modifier uniquement les élements de facturation non encore complétés.</font><br><br>';
     end if;
    
     -- verrou maximum
@@ -1585,7 +1602,7 @@ begin
 	or 
 	new.acq_fact <> old.acq_fact
 	) then 
-	RAISE EXCEPTION 'VERROU MAXIMUM - vous ne pouvez pas modifier un contrôle transmis avec une facture acquitée.';
+	RAISE EXCEPTION '<font color="#ff0000">VERROU MAXIMUM - vous ne pouvez pas modifier un contrôle transmis avec une facture acquitée.</font><br><br>';
     end if;
   
      -- UN CONTROLE SI DEJA UN CONTROLE NE PEUT PAS AJOUTER UNE ANALYSE DE DEMANDE DE TRAVAUX 
@@ -1643,14 +1660,14 @@ begin
    -- si une demande de travaux à une conclusion (hors non renseigné et non concerné) sans date de visite
    if new.date_vis is null and new.dem_concl in ('10','20','30') then
    
-	raise exception 'Vous devez renseigner une date de visite lorsque vous saisissez un avis pour une demande de travaux. Cette date correspond à la date de votre analyse de la demande.';
+	raise exception '<font color="#ff0000">Vous devez renseigner une date de visite lorsque vous saisissez un avis pour une demande de travaux. Cette date correspond à la date de votre analyse de la demande.</font><br><br>';
 	   
 	end if;
 
     -- si une demande de travaux n'a pas de conclusion (hors non renseigné et non concerné) pas de date de visite possible
    if new.date_vis is not null AND NEW.contr_nat IN ('11','12') and new.dem_concl in ('00','ZZ') then
    
-	raise exception 'Vous ne pouvez pas avoir une date de visite avec une conclusion à "Non renseignée" ou à "Non concerné".';
+	raise exception '<font color="#ff0000">Vous ne pouvez pas avoir une date de visite avec une conclusion à "Non renseignée" ou à "Non concerné".</font><br><br>';
 	   
 	end if;
 
@@ -1659,16 +1676,16 @@ begin
     -- SI demande de travaux avec avis
     if new.dem_concl in ('10','20','30') then
     	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%11%' or new.equ_pretrait || new.equ_trait || new.equ_rejet like '%10%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné", "Aucun" ou "Inaccessible"';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer un équipement à "Non renseigné", "Aucun" ou "Inaccessible"</font><br><br>';
     	end if;
     	if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
  		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;   
      	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
     end if;
     
@@ -1677,52 +1694,52 @@ begin
     
     if new.contr_concl in ('20','31','32','40') then
     	if (new.equ_pretrait || new.equ_trait || new.equ_rejet like '%00%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer un équipement à "Non renseigné" avec une conclusion du contrôle autre que "Non renseigné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer un équipement à "Non renseigné" avec une conclusion du contrôle autre que "Non renseigné".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%ZZ%') and length(new.equ_pretrait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de pré-traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
  		if (new.equ_trait like '%ZZ%') and length(new.equ_trait) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de traitement si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;   
      	if (new.equ_rejet like '%ZZ%') and length(new.equ_rejet) > 2 THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer plusieurs équipements de rejet si vous avez sélectionné "Non concerné".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%10%' and new.equ_trait like '%99%') 
         or (new.equ_rejet like '%10%' and new.equ_rejet like '%99%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Aucun" et "Autre".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Aucun" et "Autre".</font><br><br>';
        	end if;
         if (new.equ_pretrait like '%00%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%00%' and new.equ_trait like '%99%') 
         or (new.equ_rejet like '%00%' and new.equ_rejet like '%99%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non renseigné" et "Autre".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Non renseigné" et "Autre".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%11%' and new.equ_pretrait like '%99%') or (new.equ_trait like '%11%' and new.equ_trait like '%99%') 
         or (new.equ_rejet like '%11%' and new.equ_rejet like '%99%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Autre".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Inaccessible" et "Autre".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%11%') or (new.equ_trait like '%10%' and new.equ_trait like '%11%') 
         or (new.equ_rejet like '%10%' and new.equ_rejet like '%11%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" et "Aucun".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Inaccessible" et "Aucun".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%ZZ%') or (new.equ_trait like '%10%' and new.equ_trait like '%ZZ%') 
         or (new.equ_rejet like '%10%' and new.equ_rejet like '%ZZ%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non concerné" et "Aucun".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Non concerné" et "Aucun".</font><br><br>';
     	end if;
         if (new.equ_pretrait like '%10%' and new.equ_pretrait like '%00%') or (new.equ_trait like '%10%' and new.equ_trait like '%00%') 
         or (new.equ_rejet like '%10%' and new.equ_rejet like '%00%') THEN
-    		raise EXCEPTION 'Vous ne pouvez pas indiquer "Non concerné" et "Non renseigné".';
+    		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Non concerné" et "Non renseigné".</font><br><br>';
     	end if;
 
     end if;
    
    -- pour un contrôle avec une conclusion Absence d'installation, tous les équipements à "Aucun"
     if new.contr_concl IN ('10','80') and new.equ_pretrait || new.equ_trait || new.equ_rejet <> '101010'  THEN
-     raise EXCEPTION 'Vous devez indiquer aucun équipement pour toutes les filières en cas d''un contrôle avec une conclusion "Absence d''installation".';
+     raise EXCEPTION '<font color="#ff0000">Vous devez indiquer aucun équipement pour toutes les filières en cas d''un contrôle avec une conclusion "Absence d''installation".</font><br><br>';
     end if;
    
    -- si conclusion pas de défaut, un équipement ne peut pas être inaccessible ou à aucun
     if new.contr_concl = '20' and (new.equ_pretrait in ('10','11') or new.equ_trait in ('10','11') or new.equ_rejet in ('10','11')) then
- 		raise EXCEPTION 'Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"';
+ 		raise EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer "Inaccessible" ou "Aucun" pour un contrôle ne présentant pas de défaut. Remplacer "Aucun" par "Non concerné"</font><br><br>';
  	end if;
 
   -- ##### FIN DE LA GESTION DES ERREURS LIEES AUX LISTES DES EQUIPEMENTS #######
@@ -1744,46 +1761,46 @@ begin
     -- si je choisie autre dans les équipements je dois obligatoirement saisir le nom
  	-- pré-traitement
     if (new.equ_pretrait = '99' or new.equ_pretrait like '%99%') and (new.equ_pretrait_a is null or new.equ_pretrait_a = '') then 
-        RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+        RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.</font><br><br>';
        
     end if;
        -- traitement
     if (new.equ_trait = '99' or new.equ_trait like '%99%') and (new.equ_trait_a is null or new.equ_trait_a = '') then 
-       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+       RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.</font><br><br>';
     end if;
     -- rejet
     if (new.equ_rejet = '99' or new.equ_rejet like '%99%') and (new.equ_rejet_a is null or new.equ_rejet_a = '') then 
-       RAISE EXCEPTION 'Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.';
+       RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement le nom de l''équipement si vous choississez un "Autre" équipement que ceux présents dans la liste.</font><br><br>';
     end if;
 
 
    -- un contrôle lié à une installation supprimée ne peut pas être modifiée
    if (select count(*) from m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i where i.idinstal = c.idinstal and i.inst_etat='20' and c.idcontr = new.idcontr) > 0 THEN
-   raise exception 'Vous ne pouvez pas modifier un contrôle d''une installation désactivée.';   
+   raise exception '<font color="#ff0000">Vous ne pouvez pas modifier un contrôle d''une installation désactivée.</font><br><br>';   
    end if;
   
      -- si il existe déjà un contrôle avec une même date de visite, pas possible
     if (select count(*) from m_spanc.an_spanc_controle where date_vis = new.date_vis and idinstal = new.idinstal) > 0 and new.date_vis <> old.date_vis then 
-   RAISE exception 'Vous ne pouvez pas modifier ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste';
+   RAISE exception '<font color="#ff0000">Vous ne pouvez pas modifier ce contrôle. Il existe déjà un contrôle sur cette installation avec la même date de viste.</font><br><br>';
    end if;
   
    -- CONTROLE SI DATE_VISITE renseigné ne peux plus modifier modifier le prestataire
    if new.date_vis is not null and old.idpresta <> new.idpresta then 
-   raise exception 'Vous ne pouvez pas modifier le prestataire car la date de visite est renseignée.';
+   raise exception '<font color="#ff0000">Vous ne pouvez pas modifier le prestataire car la date de visite est renseignée.</font><br><br>';
    end if;
   
       -- CONTROLE SI DATE_VISITE renseigné ne peux plus modifier modifier le mode de gestion
    if new.date_vis is not null and old.mod_gest <> new.mod_gest then 
-   raise exception 'Vous ne pouvez pas modifier le mode de gestion car la date de visite est renseignée.';
+   raise exception '<font color="#ff0000">Vous ne pouvez pas modifier le mode de gestion car la date de visite est renseignée.</font><br><br>';
    end if;
   
     if new.date_vis is not null and (old.iddsp <> new.iddsp or old.idpresta <> new.idpresta) then 
-   raise exception 'Vous ne pouvez pas modifier le prestataire ou la DSP car la date de visite est renseignée.';
+   raise exception '<font color="#ff0000">Vous ne pouvez pas modifier le prestataire ou la DSP car la date de visite est renseignée.</font><br><br>';
    end if;
    
      -- SI DATE DE VISITE NE PEUT PAS MODIFIER LE MODE DE GESTION 
    if (old.date_vis <> new.date_vis or old.date_vis = new.date_vis) and old.mod_gest <> new.mod_gest then
-   raise exception 'Vous ne pouvez pas modifier le mode de gestion car la date de visite est déjà renseignée.'	;
+   raise exception '<font color="#ff0000">Vous ne pouvez pas modifier le mode de gestion car la date de visite est déjà renseignée.</font><br><br>'	;
    end if;
    
      -- SI MODIFICATION DU MODE DE GESTION EN REGIE AU LIEU DU PRESTA OU DE LA DSP
@@ -1810,7 +1827,7 @@ begin
    if new.contr_concl <> '10' THEN
    IF NEW.contr_concl <> '40' and NEW.contr_concl <> '20' and NEW.contr_concl <> '00' and NEW.contr_concl <> 'ZZ'
    	  AND NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet LIKE '%00%' THEN
-   	RAISE EXCEPTION 'Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous ne pouvez pas avoir un équipement renseignés à "Non renseigné"';
+   	RAISE EXCEPTION '<font color="#ff0000">Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous ne pouvez pas avoir un équipement renseignés à "Non renseigné".</font><br><br>';
    END IF;
     end if;
    
@@ -1818,29 +1835,29 @@ begin
    if  (new.contr_concl = '20' and NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet like '%00%')
        or (new.contr_concl = '20' and NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet like '%10%')
    THEN
-  	RAISE EXCEPTION 'Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous ne pouvez pas laisser des équipements à "Non renseignés" ou à "Aucun"';
+  	RAISE EXCEPTION '<font color="#ff0000">Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous ne pouvez pas laisser des équipements à "Non renseignés" ou à "Aucun".</font><br><br>';
    END IF;
    
 	
    -- si aucun équipement, seule l'absence d'installation peut être indiqué en contrôle
-   if  new.contr_concl = '10' and NEW.equ_pretrait || NEW.equ_trait || NEW.equ_rejet <> '101010' THEN
-  	RAISE EXCEPTION 'Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous devez indiquer "Aucun" équipements contrôlés pour conclure à une absence d''installation';
+   if  new.contr_concl = '10' and NEW.equ_pretrait || NEW.equ_trait <> '1010' THEN
+  	RAISE EXCEPTION '<font color="#ff0000">Votre conclusion n''est pas cohérente avec les équipements contrôlés. Vous devez indiquer "Aucun" pour les équipements de pré-traitements et de traitements contrôlés pour conclure à une absence d''installation.</font><br><br>';
    END IF;
 
   
    -- si aucune date de visite n'est renseignée, l'enregistrement de la conformité ne peut pas avoir lieu (sauf si Non renseigné)
    if new.date_vis is not null and new.contr_concl = '00' then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer le contrôle avec une date de visite et mettre en conclusion "Non renseignée".';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer le contrôle avec une date de visite et mettre en conclusion "Non renseignée".</font><br><br>';
    end if;
   
   -- si aucune date de visite est renseignée, l'enregistrement de la conformité ne peut pas avoir lieu si Non renseigné sauf si la nature du contrôle n'est pas liée à une demande de travaux)
    if new.date_vis is null and new.contr_concl <> '00' and new.contr_nat in ('13','14','20','30','40','50','60') then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer le contrôle avec une conclusion différente de "Non renseigné" si vous n''indiquez pas une date de visite.';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer le contrôle avec une conclusion différente de "Non renseigné" si vous n''indiquez pas une date de visite.</font><br><br>';
    end if;
   
     -- date de visite obligatoire si date d'un rapport ou de transmission
   if new.date_vis is null and (new.date_rap is not null or new.date_trap is not null) then
-   RAISE EXCEPTION 'Vous devez saisir obligatoirement une date de visite';
+   RAISE EXCEPTION '<font color="#ff0000">Vous devez saisir obligatoirement une date de visite.</font><br><br>';
   end if;
   /*
       -- aucune date de visite ne doit être renseignée si la nature du contrôle est liée à une demande de travaux)
@@ -1848,87 +1865,99 @@ begin
    RAISE EXCEPTION 'Vous ne pouvez pas indiquer une date de visite dans le cadre d''un contrôle lié à une demande de travaux.';
    end if;
 */
+
+  -- cohérence de l'année dans les dates saisies
+  IF (NEW.date_dem IS NOT NULL AND to_char(NEW.date_dem,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+  	 (NEW.date_prdv IS NOT NULL AND to_char(NEW.date_prdv,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+  	 (NEW.date_rdv IS NOT NULL AND to_char(NEW.date_rdv,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_vis IS NOT NULL AND to_char(NEW.date_vis,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_rap IS NOT NULL AND to_char(NEW.date_rap,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_fact IS NOT NULL AND to_char(NEW.date_fact,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_trap IS NOT NULL AND to_char(NEW.date_trap,'YYYY')::integer NOT BETWEEN 1980 AND 2050) OR
+	 (NEW.date_act IS NOT NULL AND to_char(NEW.date_act,'YYYY')::integer NOT BETWEEN 1980 AND 2050)  
+  then
+   	RAISE EXCEPTION '<font color="#ff0000">Vous avez saisie une année incohérente dans l''une de vos dates.</font><br><br>';
+  END IF;
+
   -- si aucune date de demande
   if new.date_dem is null then
-   RAISE EXCEPTION 'Vous devez renseigner obligatoirement la date de la demande';
+   RAISE EXCEPTION '<font color="#ff0000">Vous devez renseigner obligatoirement la date de la demande.</font><br><br>';
   end if;
  
   -- si date de la demande supérieure à la date de la visite
   if new.date_dem > new.date_vis then
-   RAISE EXCEPTION 'La date de la demande ne peut pas être supérieure à la date de visite';
+   RAISE EXCEPTION '<font color="#ff0000">La date de la demande ne peut pas être supérieure à la date de visite.</font><br><br>';
   end if;
  
     -- si date de la  visite est supérieur à la date du rapport
   if new.date_vis > new.date_rap then
-   RAISE EXCEPTION 'La date de la visite ne peut pas être supérieure à la date du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de la visite ne peut pas être supérieure à la date du rapport.</font><br><br>';
   end if;
  
     -- si date de la transmission du rapport est supérieur à la date du rapport
   if new.date_rap > new.date_trap then
-   RAISE EXCEPTION 'La date du rapport ne peut pas être supérieure à la date de transmission du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">La date du rapport ne peut pas être supérieure à la date de transmission du rapport.</font><br><br>';
   end if;
  
    -- si date de la visite est supérieur à la date de la transmission rapport
   if new.date_vis > new.date_trap then
-   RAISE EXCEPTION 'La date de la visite ne peut pas être supérieure à la date de transmission du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de la visite ne peut pas être supérieure à la date de transmission du rapport.</font><br><br>';
   end if;
  
    -- si date de transmission du rapport, la date du rapport ne peut pas être null
   if new.date_trap IS NOT null and new.date_rap IS null then
-   RAISE EXCEPTION 'Une date de transmission du rapport ne peut pas être indiqué sans indiquer la date du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">Une date de transmission du rapport ne peut pas être indiqué sans indiquer la date du rapport.</font><br><br>';
   end if;
  
   -- si date de prise de RDV est inférieure à la demande
     if new.date_dem > new.date_prdv then
-   RAISE EXCEPTION 'La date de prise de RDV ne peut pas être inférieure à la date de la demande.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de prise de RDV ne peut pas être inférieure à la date de la demande.</font><br><br>';
   end if;
  
    -- si date du RDV est inférieure à la demande
     if new.date_dem > new.date_rdv then
-   RAISE EXCEPTION 'La date du RDV ne peut pas être inférieure à la date de la demande.';
+   RAISE EXCEPTION '<font color="#ff0000">La date du RDV ne peut pas être inférieure à la date de la demande.</font><br><br>';
   end if;
  
     -- si date du RDV est inférieure à la date de prise de rdv
     if new.date_prdv > new.date_rdv then
-   RAISE EXCEPTION 'La date de prise de RDV ne peut pas être supérieure à la date du RDV.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de prise de RDV ne peut pas être supérieure à la date du RDV.</font><br><br>';
   end if;
   
     -- si date du RDV est inférieure à la date de prise de rdv
     if new.date_prdv > new.date_rdv then
-   RAISE EXCEPTION 'La date de prise de RDV ne peut pas être supérieure à la date du RDV.';
+   RAISE EXCEPTION '<font color="#ff0000">La date de prise de RDV ne peut pas être supérieure à la date du RDV.</font><br><br>';
   end if;
  
  
   -- si mode de gestion = prestataire doit en choisir 1
  if left(new.mod_gest,1) = '2' and new.idpresta is null then 
- 	RAISE EXCEPTION 'Vous devez choisir un prestataire dans la liste.';
+ 	RAISE EXCEPTION '<font color="#ff0000">Vous devez choisir un prestataire dans la liste.</font><br><br>';
  end if;
 
  -- si montant acquité, date de facturation doit-être indiquée
  if new.acq_fact is true and new.date_fact is null then 
-    RAISE EXCEPTION 'Si vous acquitez une facture, il faut renseigner obligatoirement la date de facturation.';
+    RAISE EXCEPTION '<font color="#ff0000">Si vous acquitez une facture, il faut renseigner obligatoirement la date de facturation.</font><br><br>';
  end if;
-
 /*
  -- si date de facturation > à la date de translmission du rapport
  if new.date_fact < new.date_trap then 
     RAISE EXCEPTION 'Vous ne pouvez pas indiquer une date de facturation inférieure à la date d''envoi du rapport.';
  end if;
 */
-
   -- si date de facturation et pas de date de transmission du rapport
    if new.date_fact is not null and new.date_trap is null then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer le contrôle si vous mettez une date de facturation sans date de transmission du rapport.';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer le contrôle si vous mettez une date de facturation sans date de transmission du rapport.</font><br><br>';
    end if;
   
    -- si date de facturation est null et moyne de communication <> n.r pas possible
    if new.date_trap is null and new.contr_info <> '00' then 
-   RAISE EXCEPTION 'Vous ne pouvez pas enregistrer si vous ne mettez pas une date de transmission du rapport avec un dernier moyen de communication renseigné.';
+   RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas enregistrer si vous ne mettez pas une date de transmission du rapport avec un dernier moyen de communication renseigné.</font><br><br>';
    end if;
   
    -- si refus et modif non concerné pas possible
  if new.contr_concl = '80' and new.contr_nreal = 'ZZ' then 
-    RAISE EXCEPTION 'Vous ne pouvez pas indiquer un refus de contrôle et un motif à non concerné.';
+    RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas indiquer un refus de contrôle et un motif à non concerné.</font><br><br>';
  end if;
 
    -- initialisation du verrou minimum sur les données à la saisie (après les contrôles)
@@ -1950,7 +1979,7 @@ elseif TG_OP='DELETE' then
 
 	if (select count(*) from m_spanc.an_spanc_controle c, m_spanc.an_spanc_installation i where i.idinstal = c.idinstal and i.inst_etat ='10' and c.idcontr = old.idcontr) > 0 then
 
-	  RAISE EXCEPTION 'Vous ne pouvez pas supprimer de contrôle.';
+	  RAISE EXCEPTION '<font color="#ff0000">Vous ne pouvez pas supprimer de contrôle.</font><br><br>';
 
 	end if;
 
@@ -1969,6 +1998,11 @@ $function$
 
 COMMENT ON FUNCTION m_spanc.ft_m_controle_conform() IS 'Fonction générant automatiquement la conformité selon la conclusion du contrôle et la vérification de la saisie du contrôle';
 
+-- Permissions
+
+ALTER FUNCTION m_spanc.ft_m_controle_conform() OWNER TO create_sig;
+GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conform() TO public;
+GRANT ALL ON FUNCTION m_spanc.ft_m_controle_conform() TO create_sig;
 
 
 -- ################################################################# Fonction - ft_m_controle_conform_after  ############################################
