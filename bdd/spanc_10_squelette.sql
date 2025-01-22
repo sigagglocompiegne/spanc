@@ -2159,11 +2159,13 @@ begin
 if TG_OP='UPDATE' or TG_OP = 'INSERT' then	
  if (select inst_etat from m_spanc.an_spanc_installation where idinstal = new.id) = '20' THEN
    RAISE EXCEPTION 'INSTALLATION DESACTIVEE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
+   else return new;
  end if;
 
 elseif TG_OP='DELETE' then
 	 if (select inst_etat from m_spanc.an_spanc_installation where idinstal = old.id) = '20' THEN
    RAISE EXCEPTION 'INSTALLATION DESACTIVEE - vous ne pouvez pas insérer, modifier ou supprimer de documents.';
+else return old;
  end if;
 end if;
  return new ;
