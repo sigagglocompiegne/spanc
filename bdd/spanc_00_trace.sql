@@ -9,6 +9,7 @@
 /*
 #################################################################### SUIVI CODE SQL ####################################################################
 
+-- 2025-03-17 : GB / AJout d'une vue matérialisée pour l'affiche des installations avec une demande de travaux en cours
 -- 2023/11/07 : GB / ANOMALIE : affichage des périodicités selon la date de transmission du rapport ou de la date de visite si transmission non saisie
 -- 2023/10/31 : GB / Ajustement de la fonction générant les clés primaires de contrôles
 -- 2023/08/30 : GB / Ajout de patronymes
