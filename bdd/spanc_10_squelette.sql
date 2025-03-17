@@ -1038,6 +1038,7 @@ end if;
  refresh materialized view m_spanc.xapps_geo_vmr_spanc_periodicite with data;
  refresh materialized view m_spanc.xapps_an_vmr_spanc_conception with data;
  refresh materialized view m_spanc.xapps_an_vmr_spanc_conformite with data;
+ refresh materialized view m_spanc.x_apps_geo_vmr_spanc_demtrav with data;
 
 return new;
 
@@ -1990,6 +1991,7 @@ end if;
  refresh materialized view m_spanc.xapps_geo_vmr_spanc_periodicite with data;
  refresh materialized view m_spanc.xapps_an_vmr_spanc_conception with data;
  refresh materialized view m_spanc.xapps_an_vmr_spanc_conformite with data;
+ refresh materialized view m_spanc.x_apps_geo_vmr_spanc_demtrav with data;
 
 END;
 
@@ -2325,6 +2327,7 @@ AS $function$
 begin
 	
  refresh materialized view m_spanc.xapps_geo_vmr_spanc_anc;
+ refresh materialized view m_spanc.x_apps_geo_vmr_spanc_demtrav with data;
  return new ;
 
 END;
