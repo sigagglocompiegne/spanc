@@ -299,10 +299,7 @@ END AS contr_nat,
 
 COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc IS 'Vue matérialisée rafraichie applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l''état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO';
 
--- ########################################################### xapps_geo_vmr_spanc_anc ##################################################################   
-
-
--- m_spanc.x_apps_geo_vmr_spanc_demtrav source
+-- ########################################################### x_apps_geo_vmr_spanc_demtrav ##################################################################   
 
 CREATE MATERIALIZED VIEW m_spanc.x_apps_geo_vmr_spanc_demtrav
 TABLESPACE pg_default
@@ -327,6 +324,7 @@ AS SELECT a.idinstal,
             ELSE 'non'::text
         END AS controle_dans_annee_encours,
     ad.insee,
+    e.iepci,
     ad.geom
    FROM m_spanc.an_spanc_controle a
      JOIN ( SELECT c.idinstal,
@@ -339,11 +337,12 @@ AS SELECT a.idinstal,
      JOIN m_spanc.lt_spanc_natcontr n ON n.code::text = a.contr_nat::text
      JOIN m_spanc.an_spanc_installation i1 ON i1.idinstal = a.idinstal
      JOIN x_apps.xapps_geo_vmr_adresse ad ON ad.id_adresse = i1.idadresse
+     JOIN r_administratif.an_geo g on g.insee = ad.insee
+     JOIN r_osm.geo_osm_epci e on e.cepci = g.epci
   WHERE a.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text])
 WITH DATA;
 
 COMMENT ON MATERIALIZED VIEW m_spanc.x_apps_geo_vmr_spanc_demtrav IS 'Vue applicative affichant sur la cartographie les installations avec une demande de travaux en courts (dans le délais ou hors délais) sans visite d''exécutuion.';
-
 
 -- ########################################################### xapps_geo_v_spanc_tri_contr ##################################################################
 
