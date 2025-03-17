@@ -299,6 +299,51 @@ END AS contr_nat,
 
 COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc IS 'Vue matérialisée rafraichie applicative récupérant le nombre de dossier SPANC de conformité par adresse et affichant l''état du dernier contrôle (conforme ou non conforme) pour affichage dans GEO';
 
+-- ########################################################### xapps_geo_vmr_spanc_anc ##################################################################   
+
+
+-- m_spanc.x_apps_geo_vmr_spanc_demtrav source
+
+CREATE MATERIALIZED VIEW m_spanc.x_apps_geo_vmr_spanc_demtrav
+TABLESPACE pg_default
+AS SELECT a.idinstal,
+    n.valeur AS nature,
+    d.valeur AS avis,
+    ''::text AS conformite,
+    a.date_trap,
+        CASE
+            WHEN d.valeur = 'Avis défavorable'::text OR d.valeur = 'Incomplet'::text THEN 'En attente d''un nouveau dossier'::text
+            ELSE ( SELECT
+                    CASE
+                        WHEN date_part('year'::text, t.age) < 4::double precision THEN 'Travaux en cours (délais < à 4ans)'::text
+                        ELSE 'Délais de visite dépassé (> à 4ans)'::text
+                    END AS annee_ecart
+               FROM age(now(), a.date_trap::timestamp with time zone) t(age))
+        END AS annee_ecart,
+    a.date_trap + '4 years'::interval AS date_prochain_controle,
+    to_char(a.date_trap + '4 years'::interval, 'YYYY'::text) AS annee_prochain_controle,
+        CASE
+            WHEN to_char(a.date_trap + '4 years'::interval, 'YYYY'::text) = to_char(now(), 'YYYY'::text) THEN 'oui'::text
+            ELSE 'non'::text
+        END AS controle_dans_annee_encours,
+    ad.insee,
+    ad.geom
+   FROM m_spanc.an_spanc_controle a
+     JOIN ( SELECT c.idinstal,
+            max(c.date_vis) AS date_vis
+           FROM m_spanc.an_spanc_controle c,
+            m_spanc.an_spanc_installation i
+          WHERE c.idinstal = i.idinstal AND c.date_vis IS NOT NULL
+          GROUP BY c.idinstal) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
+     JOIN m_spanc.lt_spanc_contdt d ON d.code::text = a.dem_concl::text
+     JOIN m_spanc.lt_spanc_natcontr n ON n.code::text = a.contr_nat::text
+     JOIN m_spanc.an_spanc_installation i1 ON i1.idinstal = a.idinstal
+     JOIN x_apps.xapps_geo_vmr_adresse ad ON ad.id_adresse = i1.idadresse
+  WHERE a.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text])
+WITH DATA;
+
+COMMENT ON MATERIALIZED VIEW m_spanc.x_apps_geo_vmr_spanc_demtrav IS 'Vue applicative affichant sur la cartographie les installations avec une demande de travaux en courts (dans le délais ou hors délais) sans visite d''exécutuion.';
+
 
 -- ########################################################### xapps_geo_v_spanc_tri_contr ##################################################################
 
