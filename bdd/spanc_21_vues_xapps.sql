@@ -301,7 +301,9 @@ COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_anc IS 'Vue matérialis
 
 -- ########################################################### x_apps_geo_vmr_spanc_demtrav ##################################################################   
 
-CREATE MATERIALIZED VIEW m_spanc.x_apps_geo_vmr_spanc_demtrav
+-- m_spanc.xapps_geo_vmr_spanc_demtrav source
+
+CREATE MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_demtrav
 TABLESPACE pg_default
 AS SELECT a.idinstal,
     n.valeur AS nature,
@@ -331,18 +333,20 @@ AS SELECT a.idinstal,
             max(c.date_vis) AS date_vis
            FROM m_spanc.an_spanc_controle c,
             m_spanc.an_spanc_installation i
-          WHERE c.idinstal = i.idinstal AND c.date_vis IS NOT NULL
+          WHERE c.idinstal = i.idinstal AND c.date_vis IS NOT null and i.inst_etat = '10'
           GROUP BY c.idinstal) b_1 ON a.idinstal = b_1.idinstal AND a.date_vis = b_1.date_vis
      JOIN m_spanc.lt_spanc_contdt d ON d.code::text = a.dem_concl::text
      JOIN m_spanc.lt_spanc_natcontr n ON n.code::text = a.contr_nat::text
      JOIN m_spanc.an_spanc_installation i1 ON i1.idinstal = a.idinstal
-     JOIN x_apps.xapps_geo_vmr_adresse ad ON ad.id_adresse = i1.idadresse
-     JOIN r_administratif.an_geo g on g.insee = ad.insee
-     JOIN r_osm.geo_osm_epci e on e.cepci = g.epci
+     JOIN r_adresse.xapps_geo_vmr_adresse ad ON ad.id_adresse = i1.idadresse
+     JOIN r_administratif.an_geo g ON g.insee::bpchar = ad.insee
+     JOIN r_osm.geo_osm_epci e ON e.cepci::text = g.epci::text
   WHERE a.contr_nat::text = ANY (ARRAY['11'::character varying::text, '12'::character varying::text])
 WITH DATA;
 
-COMMENT ON MATERIALIZED VIEW m_spanc.x_apps_geo_vmr_spanc_demtrav IS 'Vue applicative affichant sur la cartographie les installations avec une demande de travaux en courts (dans le délais ou hors délais) sans visite d''exécutuion.';
+COMMENT ON MATERIALIZED VIEW m_spanc.xapps_geo_vmr_spanc_demtrav IS 'Vue applicative affichant sur la cartographie les installations avec une demande de travaux en courts (dans le délais ou hors délais) sans visite d''exécutuion.';
+
+
 
 -- ########################################################### xapps_geo_v_spanc_tri_contr ##################################################################
 
